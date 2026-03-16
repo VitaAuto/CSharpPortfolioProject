@@ -9,13 +9,26 @@ using PlaywrightProject.API.Context;
 [Binding]
 public class UsersApiSteps
 {
-    private readonly UsersApiClient _api;
     private readonly UsersApiContext _context;
 
     public UsersApiSteps(UsersApiContext context)
     {
-        _api = new UsersApiClient("http://localhost:5043");
         _context = context;
+    }
+
+    [Given(@"user is logged in")]
+    public async Task GivenTheUserIsLoggedIn()
+    {
+        var vaultApiClient = new VaultApiClient(ApiConfig.VaultUri, ApiConfig.VaultToken);
+        var (username, password) = await vaultApiClient.GetCredentialsAsync();
+
+        var authApiClient = new AuthApiClient(ApiConfig.ApiBaseUrl);
+        var token = authApiClient.GetToken(username, password);
+
+        var usersApiClient = new UsersApiClient(ApiConfig.ApiBaseUrl);
+        usersApiClient.SetToken(token);
+
+        _context.ApiClient = usersApiClient;
     }
 
     [Given(@"I have a user with first name ""(.*)"", last name ""(.*)"", email ""(.*)"", is active (.*)")]
@@ -45,7 +58,7 @@ public class UsersApiSteps
     [When(@"I send a POST request to create the user")]
     public void WhenISendPOSTRequestToCreateUser()
     {
-        var resp = _api.CreateUser(_context.User);
+        var resp = _context.ApiClient.CreateUser(_context.User);
         _context.Response = resp;
         Console.WriteLine($"API response after creation a user: {resp.Content}");
         if (resp.StatusCode == System.Net.HttpStatusCode.Created)
@@ -65,7 +78,7 @@ public class UsersApiSteps
     [When(@"I send a POST request to create the other user")]
     public void WhenISendPOSTRequestToCreateOtherUser()
     {
-        var resp = _api.CreateUser(_context.OtherUser);
+        var resp = _context.ApiClient.CreateUser(_context.OtherUser);
         _context.Response = resp;
         Console.WriteLine($"API response after creation another user: {resp.Content}");
         if (resp.StatusCode == System.Net.HttpStatusCode.Created)
@@ -93,40 +106,40 @@ public class UsersApiSteps
             Email = email,
             IsActive = isActive
         };
-        _context.Response = _api.UpdateUser(_context.UserId, updatedUser);
+        _context.Response = _context.ApiClient.UpdateUser(_context.UserId, updatedUser);
     }
 
     [When(@"I send a PATCH request to update the user with email ""(.*)""")]
     public void WhenISendPatchRequestToUpdateUserWithEmail(string email)
     {
         var patchDto = new { Email = email };
-        _context.Response = _api.PatchUser(_context.UserId, patchDto);
+        _context.Response = _context.ApiClient.PatchUser(_context.UserId, patchDto);
     }
 
     [When(@"I send a DELETE request to delete the user")]
     public void WhenISendDeleteRequestToDeleteUser()
     {
         Console.WriteLine($"Deletion the user with id: {_context.UserId}");
-        _context.Response = _api.DeleteUser(_context.UserId);
+        _context.Response = _context.ApiClient.DeleteUser(_context.UserId);
     }
 
     [When(@"I send a DELETE request to delete the user by id (\d+)")]
     public void WhenISendDeleteRequestToDeleteUserById(int id)
     {
-        _context.Response = _api.DeleteUser(id);
+        _context.Response = _context.ApiClient.DeleteUser(id);
     }
 
     [When(@"I send a GET request to get the user by id")]
     public void WhenISendGetRequestToGetUserById()
     {
-        Console.WriteLine($"Deletion the user with id: {_context.UserId}");
-        _context.Response = _api.GetUser(_context.UserId);
+        Console.WriteLine($"Get the user with id: {_context.UserId}");
+        _context.Response = _context.ApiClient.GetUser(_context.UserId);
     }
 
     [When(@"I send a GET request to get the user by id (\d+)")]
     public void WhenISendGetRequestToGetUserById(int id)
     {
-        _context.Response = _api.GetUser(id);
+        _context.Response = _context.ApiClient.GetUser(id);
     }
 
     [Then(@"the response status should be (.*)")]

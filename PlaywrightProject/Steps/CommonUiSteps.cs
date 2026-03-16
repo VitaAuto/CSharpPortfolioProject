@@ -30,8 +30,8 @@ public class CommonUiSteps
         string expectedUrl = pageName.StartsWith("http")
             ? pageName
             : pageName.ToLower() == "main"
-                ? "https://www.epam.com/"
-                : $"https://www.epam.com/{pageName.ToLower()}";
+                ? UiConfig.UiBaseUrl
+                : $"{UiConfig.UiBaseUrl}{pageName.ToLower()}";
 
         _testContext.CurrentPage.GetCurrentUrl().Should().Be(expectedUrl, $"Should be navigated to {pageName}");
         Console.WriteLine($"Current page is: {expectedUrl}");

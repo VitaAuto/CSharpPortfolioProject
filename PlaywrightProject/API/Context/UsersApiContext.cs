@@ -16,5 +16,7 @@ namespace PlaywrightProject.API.Context
         public int OtherUserId { get; set; }
         public RestResponse Response { get; set; }
         public List<int> CreatedUserIds { get; set; } = new();
+
+        public UsersApiClient ApiClient { get; set; }
     }
 }

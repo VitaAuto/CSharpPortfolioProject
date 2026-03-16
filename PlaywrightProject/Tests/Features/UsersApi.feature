@@ -1,9 +1,18 @@
 @api
 Feature: Users API
 
+  Scenario Outline: Get user by id
+    Given user is logged in
+    And I have a user with first name "Sam", last name "Lamour", email "sam@mail.com", is active true
+    When I send a POST request to create the user
+    Then the response status should be 201
+    When I send a GET request to get the user by id
+    Then the response status should be 200
+  
   @smoke
   Scenario Outline: Create user
-    Given I have a user with first name "<FirstName>", last name "<LastName>", email "<Email>", is active <IsActive>
+    Given user is logged in
+    And I have a user with first name "<FirstName>", last name "<LastName>", email "<Email>", is active <IsActive>
     When I send a POST request to create the user
     Then the response status should be <Status>
     And the response should contain "<ExpectedText>"
@@ -16,7 +25,8 @@ Feature: Users API
       | Ivan      | Ivanov   | invalidemail  | true     | 400    | Email is not valid                          |
 
   Scenario Outline: Create user with duplicate email
-    Given I have a user with first name "<FirstName>", last name "<LastName>", email "<Email>", is active <IsActive>
+    Given user is logged in
+    And I have a user with first name "<FirstName>", last name "<LastName>", email "<Email>", is active <IsActive>
     And I have another user with first name "<OtherFirstName>", last name "<OtherLastName>", email "<Email>", is active <OtherIsActive>
     When I send a POST request to create the user
     And I send a POST request to create the other user
@@ -29,7 +39,8 @@ Feature: Users API
 
   @smoke
   Scenario Outline: Update user with PUT
-    Given I have a user with first name "<FirstName>", last name "<LastName>", email "<Email>", is active <IsActive>
+    Given user is logged in
+    And I have a user with first name "<FirstName>", last name "<LastName>", email "<Email>", is active <IsActive>
     When I send a POST request to create the user
     And I send a PUT request to update the user with first name "<NewFirstName>", last name "<NewLastName>", email "<NewEmail>", is active <NewIsActive>
     Then the response status should be <Status>
@@ -43,7 +54,8 @@ Feature: Users API
 
   @smoke
   Scenario Outline: Patch user with email
-    Given I have a user with first name "<FirstName>", last name "<LastName>", email "<Email>", is active <IsActive>
+    Given user is logged in
+    And I have a user with first name "<FirstName>", last name "<LastName>", email "<Email>", is active <IsActive>
     And I have another user with first name "<OtherFirstName>", last name "<OtherLastName>", email "<OtherEmail>", is active <OtherIsActive>
     When I send a POST request to create the user
     And I send a POST request to create the other user
@@ -58,7 +70,8 @@ Feature: Users API
 
   @smoke
   Scenario Outline: Delete user
-    Given I have a user with first name "<FirstName>", last name "<LastName>", email "<Email>", is active <IsActive>
+    Given user is logged in
+    And I have a user with first name "<FirstName>", last name "<LastName>", email "<Email>", is active <IsActive>
     When I send a POST request to create the user
     And I send a DELETE request to delete the user
     Then the response status should be 204
@@ -71,5 +84,6 @@ Feature: Users API
       | Petra     | Petrova  | petra@mail.com  | false    |
 
   Scenario: Delete user by non-existing id
+    Given user is logged in
     When I send a DELETE request to delete the user by id 99999
     Then the response status should be 404

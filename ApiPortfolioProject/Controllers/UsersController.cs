@@ -1,13 +1,16 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using ApiPortfolioProject.Models;
+﻿using ApiPortfolioProject.Models;
 using ApiPortfolioProject.Repositories;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using System;
 
 namespace ApiPortfolioProject.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class UsersController : ControllerBase
+
     {
         private const string EmailExistsError = "User with this email already exists.";
         private const string EmailInvalidError = "Email is not valid.";
@@ -17,7 +20,6 @@ namespace ApiPortfolioProject.Controllers
         {
             _userRepository = userRepository;
         }
-
         private bool IsValidEmail(string email)
         {
             return !string.IsNullOrWhiteSpace(email) && email.Contains("@") && email.Contains(".");
@@ -36,9 +38,12 @@ namespace ApiPortfolioProject.Controllers
                 return BadRequest("Email is required.");
             if (!IsValidEmail(user.Email))
                 return BadRequest(EmailInvalidError);
-
             if (_userRepository.EmailExists(user.Email))
                 return Conflict(EmailExistsError);
+            if (string.IsNullOrWhiteSpace(user.CreatedOn))
+                user.CreatedOn = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss");
+            if (string.IsNullOrWhiteSpace(user.ModifiedOn))
+                user.ModifiedOn = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss");
 
             var createdUser = _userRepository.CreateUser(user);
             return CreatedAtAction(nameof(GetUser), new { id = createdUser.Id }, createdUser);
@@ -69,8 +74,7 @@ namespace ApiPortfolioProject.Controllers
                 return BadRequest("FirstName is required.");
             if (string.IsNullOrWhiteSpace(user.LastName))
                 return BadRequest("LastName is required.");
-            if (string.IsNullOrWhiteSpace
-(user.Email))
+            if (string.IsNullOrWhiteSpace(user.Email))
                 return BadRequest("Email is required.");
             if (!IsValidEmail(user.Email))
                 return BadRequest(EmailInvalidError);
@@ -90,6 +94,9 @@ namespace ApiPortfolioProject.Controllers
                 return NoContent();
             }
 
+            user.CreatedOn = currentUser.CreatedOn;
+            user.ModifiedOn = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss");
+
             var updatedUser = _userRepository.UpdateUser(id, user);
             return Ok(updatedUser);
         }
@@ -107,7 +114,6 @@ namespace ApiPortfolioProject.Controllers
             if (user == null)
                 return NotFound();
 
-            // at least 1 field should be updated
             bool changed = false;
             if (patch.FirstName != null && patch.FirstName != user.FirstName) changed = true;
             if (patch.LastName != null && patch.LastName != user.LastName) changed = true;
@@ -117,7 +123,6 @@ namespace ApiPortfolioProject.Controllers
             if (!changed)
                 return NoContent();
 
-            // Mandatory fields validations
             if (patch.FirstName != null && string.IsNullOrWhiteSpace(patch.FirstName))
                 return BadRequest("FirstName is required.");
             if (patch.LastName != null && string.IsNullOrWhiteSpace(patch.LastName))
@@ -130,8 +135,13 @@ namespace ApiPortfolioProject.Controllers
             var emailToCheck = patch.Email ?? user.Email;
             if (_userRepository.EmailExists(emailToCheck, id))
                 return Conflict(EmailExistsError);
+            if (patch.FirstName != null) user.FirstName = patch.FirstName;
+            if (patch.LastName != null) user.LastName = patch.LastName;
+            if (patch.Email != null) user.Email = patch.Email;
+            if (patch.IsActive.HasValue) user.IsActive = patch.IsActive.Value;
+            user.ModifiedOn = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss");
 
-            var updatedUser = _userRepository.PatchUser(id, patch);
+            var updatedUser = _userRepository.UpdateUser(id, user);
             return Ok(updatedUser);
         }
 
