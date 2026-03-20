@@ -16,7 +16,10 @@ namespace PlaywrightProject.UI.Tests
         [TearDown]
         public async Task TearDown()
         {
-            await Driver.CleanupAsync();
+            if (Driver != null)
+            {
+                await Driver.CleanupAsync();
+            }
         }
     }
 }

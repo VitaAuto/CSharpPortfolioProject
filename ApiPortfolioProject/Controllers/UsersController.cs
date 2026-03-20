@@ -22,7 +22,7 @@ namespace ApiPortfolioProject.Controllers
         }
         private bool IsValidEmail(string email)
         {
-            return !string.IsNullOrWhiteSpace(email) && email.Contains("@") && email.Contains(".");
+            return !string.IsNullOrWhiteSpace(email) && email.Contains('@') && email.Contains('.');
         }
 
         [HttpPost]
@@ -46,6 +46,8 @@ namespace ApiPortfolioProject.Controllers
                 user.ModifiedOn = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss");
 
             var createdUser = _userRepository.CreateUser(user);
+            if (createdUser == null)
+                return StatusCode(500, "User creation failed.");
             return CreatedAtAction(nameof(GetUser), new { id = createdUser.Id }, createdUser);
         }
 
@@ -133,6 +135,11 @@ namespace ApiPortfolioProject.Controllers
                 return BadRequest(EmailInvalidError);
 
             var emailToCheck = patch.Email ?? user.Email;
+            if (string.IsNullOrWhiteSpace(emailToCheck))
+                return BadRequest("Email is required.");
+
+            if (_userRepository.EmailExists(emailToCheck, id))
+                return Conflict(EmailExistsError);
             if (_userRepository.EmailExists(emailToCheck, id))
                 return Conflict(EmailExistsError);
             if (patch.FirstName != null) user.FirstName = patch.FirstName;
@@ -141,7 +148,7 @@ namespace ApiPortfolioProject.Controllers
             if (patch.IsActive.HasValue) user.IsActive = patch.IsActive.Value;
             user.ModifiedOn = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss");
 
-            var updatedUser = _userRepository.UpdateUser(id, user);
+            var updatedUser = _userRepository.PatchUser(id, patch);
             return Ok(updatedUser);
         }
 

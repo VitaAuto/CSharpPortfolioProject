@@ -16,7 +16,7 @@ namespace PlaywrightProject.UI.Components
 
         public async Task<bool> IsEnabledAsync() => await Locator.IsEnabledAsync();
 
-        public async Task<bool> IsVisibleAsync() => await Locator.IsVisibleAsync();
+        public override async Task<bool> IsVisibleAsync() => await Locator.IsVisibleAsync();
 
         public async Task<string?> GetPlaceholderAsync() => await Locator.GetAttributeAsync("placeholder");
     }

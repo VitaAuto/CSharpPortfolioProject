@@ -4,6 +4,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using ApiPortfolioProject.Services;
 
 namespace ApiPortfolioProject.Controllers
 {
@@ -22,8 +23,8 @@ namespace ApiPortfolioProject.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginDto login)
         {
-            var creds = await _vaultService.GetCredentialsAsync();
-            if (login.Username == creds.Username && login.Password == creds.Password)
+            var (username, password) = await _vaultService.GetCredentialsAsync();
+            if (login.Username == username && login.Password == password)
             {
                 var jwtSecret = await _vaultService.GetJwtSecretAsync();
                 var token = GenerateJwtToken(login.Username, jwtSecret);
@@ -31,7 +32,7 @@ namespace ApiPortfolioProject.Controllers
             }
             return Unauthorized();
         }
-        private string GenerateJwtToken(string username, string jwtSecret)
+        private static string GenerateJwtToken(string username, string jwtSecret)
         {
             var claims = new[] { new Claim(ClaimTypes.Name, username) };
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret));

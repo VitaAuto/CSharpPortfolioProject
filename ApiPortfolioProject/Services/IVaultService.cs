@@ -1,5 +1,8 @@
-﻿public interface IVaultService
+﻿namespace ApiPortfolioProject.Services
 {
-    Task<(string Username, string Password)> GetCredentialsAsync();
-    Task<string> GetJwtSecretAsync();
+    public interface IVaultService
+    {
+        Task<(string Username, string Password)> GetCredentialsAsync();
+        Task<string> GetJwtSecretAsync();
+    }
 }

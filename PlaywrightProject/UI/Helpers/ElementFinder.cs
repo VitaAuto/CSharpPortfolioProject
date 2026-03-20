@@ -9,7 +9,7 @@ namespace PlaywrightProject.UI.Helpers
 {
     public static class ElementFinder
     {
-        public static object FindElementByName(object pageObject, string name)
+        public static object? FindElementByName(object pageObject, string name)
         {
             var type = pageObject.GetType();
 

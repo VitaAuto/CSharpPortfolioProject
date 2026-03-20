@@ -7,15 +7,11 @@ using Microsoft.Extensions.Configuration;
 
 namespace ApiPortfolioProject.Repositories
 {
-    public class UserRepository : IUserRepository
+    public class UserRepository(IConfiguration config) : IUserRepository
     {
-        private readonly string _connectionString;
+        private readonly string? _connectionString = config.GetConnectionString("DefaultConnection");
 
-        public UserRepository(IConfiguration config)
-        {
-            _connectionString = config.GetConnectionString("DefaultConnection");
-        }
-        public User GetUser(int id)
+        public User? GetUser(int id)
         {
             using var connection = new NpgsqlConnection(_connectionString);
             connection.Open();
@@ -28,7 +24,7 @@ namespace ApiPortfolioProject.Repositories
             connection.Open();
             return connection.Query<User>("SELECT * FROM \"Users\"").AsList();
         }
-        public User CreateUser(User user)
+        public User? CreateUser(User user)
         {
             using var connection = new NpgsqlConnection(_connectionString);
             connection.Open();
@@ -46,7 +42,7 @@ namespace ApiPortfolioProject.Repositories
             user.Id = id;
             return GetUser(id);
         }
-        public User UpdateUser(int id, User user)
+        public User? UpdateUser(int id, User user)
         {
             using var connection = new NpgsqlConnection(_connectionString);
             connection.Open();
@@ -71,7 +67,7 @@ namespace ApiPortfolioProject.Repositories
             });
             return GetUser(id);
         }
-        public User PatchUser(int id, UserPatchDto patch)
+        public User? PatchUser(int id, UserPatchDto patch)
         {
             var user = GetUser(id);
             if (user == null) return null;

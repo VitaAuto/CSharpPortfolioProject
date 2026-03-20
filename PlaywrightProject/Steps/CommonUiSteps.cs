@@ -25,7 +25,7 @@ public class CommonUiSteps
     }
 
     [Then(@"user should be navigated to '(.*)' page")]
-    public async Task ThenUserMovesToPage(string pageName)
+    public Task ThenUserMovesToPage(string pageName)
     {
         string expectedUrl = pageName.StartsWith("http")
             ? pageName
@@ -35,6 +35,7 @@ public class CommonUiSteps
 
         _testContext.CurrentPage.GetCurrentUrl().Should().Be(expectedUrl, $"Should be navigated to {pageName}");
         Console.WriteLine($"Current page is: {expectedUrl}");
+        return Task.CompletedTask;
     }
 
     [When(@"user clicks ""(.*)""")]

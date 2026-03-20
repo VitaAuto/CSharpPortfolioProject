@@ -1,15 +1,14 @@
 using ApiPortfolioProject.Repositories;
+using ApiPortfolioProject.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 
-// Swagger с поддержкой JWT
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new() { Title = "ApiPortfolioProject", Version = "v1" });
@@ -42,8 +41,8 @@ builder.Services.AddSwaggerGen(c =>
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IVaultService, VaultService>();
 
-// JWT config (пример, лучше брать из Vault или appsettings)
-var jwtKey = "my_super_secret_key_that_is_32_chars!"; // должен совпадать с тем, что в Vault
+
+var jwtKey = "my_super_secret_key_that_is_32_chars!";
 var jwtIssuer = "yourIssuer";
 var jwtAudience = "yourAudience";
 
@@ -68,7 +67,6 @@ builder.Services.AddAuthentication(options =>
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -77,7 +75,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.UseAuthentication(); // обязательно перед UseAuthorization
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();

@@ -5,16 +5,14 @@ using RestSharp;
 using PlaywrightProject.API.Models;
 using PlaywrightProject.API.TestData;
 using PlaywrightProject.API.Context;
+using System.Net;
+using PlaywrightProject.API.ApiClient;
+using PlaywrightProject.Config;
 
 [Binding]
-public class UsersApiSteps
+public class UsersApiSteps(UsersApiContext context)
 {
-    private readonly UsersApiContext _context;
-
-    public UsersApiSteps(UsersApiContext context)
-    {
-        _context = context;
-    }
+    private readonly UsersApiContext _context = context;
 
     [Given(@"user is logged in")]
     public async Task GivenTheUserIsLoggedIn()
@@ -61,10 +59,8 @@ public class UsersApiSteps
         var resp = _context.ApiClient.CreateUser(_context.User);
         _context.Response = resp;
         Console.WriteLine($"API response after creation a user: {resp.Content}");
-        if (resp.StatusCode == System.Net.HttpStatusCode.Created)
+        if (resp.StatusCode == HttpStatusCode.Created && !string.IsNullOrEmpty(resp.Content) && JsonConvert.DeserializeObject<User>(resp.Content) is User createdUser)
         {
-            var createdUser = JsonConvert.DeserializeObject<User>(resp.Content);
-            Console.WriteLine($"User id from response: {createdUser.Id}");
             _context.UserId = createdUser.Id;
             _context.User = createdUser;
             _context.CreatedUserIds.Add(createdUser.Id);
@@ -81,10 +77,8 @@ public class UsersApiSteps
         var resp = _context.ApiClient.CreateUser(_context.OtherUser);
         _context.Response = resp;
         Console.WriteLine($"API response after creation another user: {resp.Content}");
-        if (resp.StatusCode == System.Net.HttpStatusCode.Created)
+        if (resp.StatusCode == HttpStatusCode.Created && !string.IsNullOrEmpty(resp.Content) && JsonConvert.DeserializeObject<User>(resp.Content) is User createdUser)
         {
-            var createdUser = JsonConvert.DeserializeObject<User>(resp.Content);
-            Console.WriteLine($"Another user id from response: {createdUser.Id}");
             _context.OtherUserId = createdUser.Id;
             _context.OtherUser = createdUser;
             _context.CreatedUserIds.Add(createdUser.Id);

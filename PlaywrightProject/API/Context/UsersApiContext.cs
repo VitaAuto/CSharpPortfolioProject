@@ -5,18 +5,18 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using PlaywrightProject.API.Models;
+using PlaywrightProject.API.ApiClient;
 
 namespace PlaywrightProject.API.Context
 {
     public class UsersApiContext
     {
-        public User User { get; set; }
+        public UsersApiClient ApiClient { get; set; } = default!;
+        public User User { get; set; } = default!;
+        public User OtherUser { get; set; } = default!;
         public int UserId { get; set; }
-        public User OtherUser { get; set; }
         public int OtherUserId { get; set; }
-        public RestResponse Response { get; set; }
         public List<int> CreatedUserIds { get; set; } = new();
-
-        public UsersApiClient ApiClient { get; set; }
+        public RestResponse Response { get; set; } = default!;
     }
 }

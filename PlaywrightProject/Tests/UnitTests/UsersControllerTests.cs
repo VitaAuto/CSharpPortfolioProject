@@ -38,10 +38,11 @@ namespace PlaywrightProject.Tests.UnitTests
                 IsActive = isActive
             };
 
-            var result = _controller.CreateUser(user);
+            var result = _controller?.CreateUser(user);
 
             result.Should().BeOfType<BadRequestObjectResult>();
-            (result as BadRequestObjectResult).Value.Should().Be(expectedMessage);
+            if (result is BadRequestObjectResult badRequest)
+                badRequest.Value.Should().Be(expectedMessage);
         }
 
         [Test]
@@ -54,13 +55,13 @@ namespace PlaywrightProject.Tests.UnitTests
                 Email = "ivan@mail.com",
                 IsActive = true
             };
-            _repoMock.Setup(r => r.EmailExists(user.Email, null)).Returns(true);
+            _repoMock?.Setup(r => r.EmailExists(user.Email, null)).Returns(true);
 
-            var result = _controller.CreateUser(user);
+            var result = _controller?.CreateUser(user);
 
             result.Should().BeOfType<ConflictObjectResult>();
-            var conflict = result as ConflictObjectResult;
-            conflict.Value.Should().Be("User with this email already exists.");
+            if (result is ConflictObjectResult conflict)
+                conflict.Value.Should().Be("User with this email already exists.");
         }
 
         [Test]
@@ -81,14 +82,14 @@ namespace PlaywrightProject.Tests.UnitTests
                 Email = "ivan@mail.com",
                 IsActive = true
             };
-            _repoMock.Setup(r => r.EmailExists(user.Email, null)).Returns(false);
-            _repoMock.Setup(r => r.CreateUser(user)).Returns(createdUser);
+            _repoMock?.Setup(r => r.EmailExists(user.Email, null)).Returns(false);
+            _repoMock?.Setup(r => r.CreateUser(user)).Returns(createdUser);
 
-            var result = _controller.CreateUser(user);
+            var result = _controller?.CreateUser(user);
 
             result.Should().BeOfType<CreatedAtActionResult>();
-            var created = result as CreatedAtActionResult;
-            created.Value.Should().BeEquivalentTo(createdUser);
+            if (result is CreatedAtActionResult created)
+                created.Value.Should().BeEquivalentTo(createdUser);
         }
 
         // --- GET BY ID ---
@@ -97,14 +98,15 @@ namespace PlaywrightProject.Tests.UnitTests
         public void GetUser_VariousCases_ReturnsExpectedResult(int userId, bool found)
         {
             var user = new User { Id = userId, FirstName = "Ivan", LastName = "Ivanov", Email = "ivan@mail.com", IsActive = true };
-            _repoMock.Setup(r => r.GetUser(userId)).Returns(found ? user : null);
+            _repoMock?.Setup(r => r.GetUser(userId)).Returns(found ? user : null);
 
-            var result = _controller.GetUser(userId);
+            var result = _controller?.GetUser(userId);
 
             if (found)
             {
                 result.Should().BeOfType<OkObjectResult>();
-                (result as OkObjectResult).Value.Should().BeEquivalentTo(user);
+                if (result is OkObjectResult ok)
+                    ok.Value.Should().BeEquivalentTo(user);
             }
             else
             {
@@ -120,12 +122,14 @@ namespace PlaywrightProject.Tests.UnitTests
             {
                 new User { Id = 1, FirstName = "Ivan", LastName = "Ivanov", Email = "ivan@mail.com", IsActive = true }
             };
-            _repoMock.Setup(r => r.GetAllUsers()).Returns(users);
+            _repoMock?.Setup(r => r.GetAllUsers()).Returns(users);
 
-            var result = _controller.GetAllUsers();
+            var result = _controller?.GetAllUsers();
 
             result.Should().BeOfType<OkObjectResult>();
-            (result as OkObjectResult).Value.Should().BeEquivalentTo(users);
+            if (result is OkObjectResult ok)
+                ok.Value.Should().BeEquivalentTo
+(users);
         }
 
         // --- UPDATE ---
@@ -144,10 +148,11 @@ namespace PlaywrightProject.Tests.UnitTests
                 IsActive = isActive
             };
 
-            var result = _controller.UpdateUser(1, user);
+            var result = _controller?.UpdateUser(1, user);
 
             result.Should().BeOfType<BadRequestObjectResult>();
-            (result as BadRequestObjectResult).Value.Should().Be(expectedMessage);
+            if (result is BadRequestObjectResult badRequest)
+                badRequest.Value.Should().Be(expectedMessage);
         }
 
         [Test]
@@ -160,22 +165,23 @@ namespace PlaywrightProject.Tests.UnitTests
                 Email = "ivan@mail.com",
                 IsActive = true
             };
-            _repoMock.Setup(r => r.EmailExists(user.Email, 1)).Returns(true);
+            _repoMock?.Setup(r => r.EmailExists(user.Email, 1)).Returns(true);
 
-            var result = _controller.UpdateUser(1, user);
+            var result = _controller?.UpdateUser(1, user);
 
             result.Should().BeOfType<ConflictObjectResult>();
-            (result as ConflictObjectResult).Value.Should().Be("User with this email already exists.");
+            if (result is ConflictObjectResult conflict)
+                conflict.Value.Should().Be("User with this email already exists.");
         }
 
         [Test]
         public void UpdateUser_UserNotFound_ReturnsNotFound()
         {
             var user = new User { FirstName = "Ivan", LastName = "Ivanov", Email = "ivan@mail.com", IsActive = true };
-            _repoMock.Setup(r => r.EmailExists(user.Email, 1)).Returns(false);
-            _repoMock.Setup(r => r.GetUser(1)).Returns((User)null);
+            _repoMock?.Setup(r => r.EmailExists(user.Email, 1)).Returns(false);
+            _repoMock?.Setup(r => r.GetUser(1)).Returns((User?)null);
 
-            var result = _controller.UpdateUser(1, user);
+            var result = _controller?.UpdateUser(1, user);
 
             result.Should().BeOfType<NotFoundResult>();
         }
@@ -184,10 +190,10 @@ namespace PlaywrightProject.Tests.UnitTests
         public void UpdateUser_NoChanges_ReturnsNoContent()
         {
             var user = new User { FirstName = "Ivan", LastName = "Ivanov", Email = "ivan@mail.com", IsActive = true };
-            _repoMock.Setup(r => r.EmailExists(user.Email, 1)).Returns(false);
-            _repoMock.Setup(r => r.GetUser(1)).Returns(user);
+            _repoMock?.Setup(r => r.EmailExists(user.Email, 1)).Returns(false);
+            _repoMock?.Setup(r => r.GetUser(1)).Returns(user);
 
-            var result = _controller.UpdateUser(1, user);
+            var result = _controller?.UpdateUser(1, user);
 
             result.Should().BeOfType<NoContentResult>();
         }
@@ -199,14 +205,15 @@ namespace PlaywrightProject.Tests.UnitTests
             var newUser = new User { FirstName = "Petr", LastName = "Petrov", Email = "petr@mail.com", IsActive = false };
             var updatedUser = new User { Id = 1, FirstName = "Petr", LastName = "Petrov", Email = "petr@mail.com", IsActive = false };
 
-            _repoMock.Setup(r => r.EmailExists(newUser.Email, 1)).Returns(false);
-            _repoMock.Setup(r => r.GetUser(1)).Returns(oldUser);
-            _repoMock.Setup(r => r.UpdateUser(1, newUser)).Returns(updatedUser);
+            _repoMock?.Setup(r => r.EmailExists(newUser.Email, 1)).Returns(false);
+            _repoMock?.Setup(r => r.GetUser(1)).Returns(oldUser);
+            _repoMock?.Setup(r => r.UpdateUser(1, newUser)).Returns(updatedUser);
 
-            var result = _controller.UpdateUser(1, newUser);
+            var result = _controller?.UpdateUser(1, newUser);
 
             result.Should().BeOfType<OkObjectResult>();
-            (result as OkObjectResult).Value.Should().BeEquivalentTo(updatedUser);
+            if (result is OkObjectResult ok)
+                ok.Value.Should().BeEquivalentTo(updatedUser);
         }
 
         // --- PATCH ---
@@ -228,27 +235,29 @@ namespace PlaywrightProject.Tests.UnitTests
 
             if (expectedMessage == "At least one field must be provided for patch.")
             {
-                var result = _controller.PatchUser(1, patch);
+                var result = _controller?.PatchUser(1, patch);
                 result.Should().BeOfType<BadRequestObjectResult>();
-                (result as BadRequestObjectResult).Value.Should().Be(expectedMessage);
+                if (result is BadRequestObjectResult badRequest)
+                    badRequest.Value.Should().Be(expectedMessage);
                 return;
             }
 
             var user = new User { Id = 1, FirstName = "Ivan", LastName = "Ivanov", Email = "ivan@mail.com", IsActive = true };
-            _repoMock.Setup(r => r.GetUser(1)).Returns(user);
+            _repoMock?.Setup(r => r.GetUser(1)).Returns(user);
 
-            var result2 = _controller.PatchUser(1, patch);
+            var result2 = _controller?.PatchUser(1, patch);
             result2.Should().BeOfType<BadRequestObjectResult>();
-            (result2 as BadRequestObjectResult).Value.Should().Be(expectedMessage);
+            if (result2 is BadRequestObjectResult badRequest2)
+                badRequest2.Value.Should().Be(expectedMessage);
         }
 
         [Test]
         public void PatchUser_UserNotFound_ReturnsNotFound()
         {
             var patch = new UserPatchDto { FirstName = "NewName" };
-            _repoMock.Setup(r => r.GetUser(1)).Returns((User)null);
+            _repoMock?.Setup(r => r.GetUser(1)).Returns((User?)null);
 
-            var result = _controller.PatchUser(1, patch);
+            var result = _controller?.PatchUser(1, patch);
 
             result.Should().BeOfType<NotFoundResult>();
         }
@@ -258,9 +267,9 @@ namespace PlaywrightProject.Tests.UnitTests
         {
             var user = new User { Id = 1, FirstName = "Ivan", LastName = "Ivanov", Email = "ivan@mail.com", IsActive = true };
             var patch = new UserPatchDto { FirstName = "Ivan" };
-            _repoMock.Setup(r => r.GetUser(1)).Returns(user);
+            _repoMock?.Setup(r => r.GetUser(1)).Returns(user);
 
-            var result = _controller.PatchUser(1, patch);
+            var result = _controller?.PatchUser(1, patch);
 
             result.Should().BeOfType<NoContentResult>();
         }
@@ -268,15 +277,23 @@ namespace PlaywrightProject.Tests.UnitTests
         [Test]
         public void PatchUser_EmailAlreadyExists_ReturnsConflict()
         {
-            var user = new User { Id = 1, FirstName = "Ivan", LastName = "Ivanov", Email = "ivan@mail.com", IsActive = true };
+            var user = new User
+            {
+                Id = 1,
+                FirstName = "Ivan",
+                LastName = "Ivanov",
+                Email = "ivan@mail.com",
+                IsActive = true
+            };
             var patch = new UserPatchDto { Email = "petr@mail.com" };
-            _repoMock.Setup(r => r.GetUser(1)).Returns(user);
-            _repoMock.Setup(r => r.EmailExists("petr@mail.com", 1)).Returns(true);
+            _repoMock?.Setup(r => r.GetUser(1)).Returns(user);
+            _repoMock?.Setup(r => r.EmailExists("petr@mail.com", 1)).Returns(true);
 
-            var result = _controller.PatchUser(1, patch);
+            var result = _controller?.PatchUser(1, patch);
 
             result.Should().BeOfType<ConflictObjectResult>();
-            (result as ConflictObjectResult).Value.Should().Be("User with this email already exists.");
+            if (result is ConflictObjectResult conflict)
+                conflict.Value.Should().Be("User with this email already exists.");
         }
 
         [Test]
@@ -286,14 +303,15 @@ namespace PlaywrightProject.Tests.UnitTests
             var patch = new UserPatchDto { FirstName = "Petr" };
             var updatedUser = new User { Id = 1, FirstName = "Petr", LastName = "Ivanov", Email = "ivan@mail.com", IsActive = true };
 
-            _repoMock.Setup(r => r.GetUser(1)).Returns(user);
-            _repoMock.Setup(r => r.EmailExists("ivan@mail.com", 1)).Returns(false);
-            _repoMock.Setup(r => r.PatchUser(1, patch)).Returns(updatedUser);
+            _repoMock?.Setup(r => r.GetUser(1)).Returns(user);
+            _repoMock?.Setup(r => r.EmailExists("ivan@mail.com", 1)).Returns(false);
+            _repoMock?.Setup(r => r.PatchUser(1, patch)).Returns(updatedUser);
 
-            var result = _controller.PatchUser(1, patch);
+            var result = _controller?.PatchUser(1, patch);
 
             result.Should().BeOfType<OkObjectResult>();
-            (result as OkObjectResult).Value.Should().BeEquivalentTo(updatedUser);
+            if (result is OkObjectResult ok)
+                ok.Value.Should().BeEquivalentTo(updatedUser);
         }
 
         // --- DELETE ---
@@ -301,9 +319,9 @@ namespace PlaywrightProject.Tests.UnitTests
         [TestCase(2, true)]
         public void DeleteUser_VariousCases_ReturnsExpectedResult(int userId, bool deleted)
         {
-            _repoMock.Setup(r => r.DeleteUser(userId)).Returns(deleted);
+            _repoMock?.Setup(r => r.DeleteUser(userId)).Returns(deleted);
 
-            var result = _controller.DeleteUser(userId);
+            var result = _controller?.DeleteUser(userId);
 
             if (deleted)
                 result.Should().BeOfType<NoContentResult>();

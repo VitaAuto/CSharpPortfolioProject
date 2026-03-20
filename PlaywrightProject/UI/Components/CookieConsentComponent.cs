@@ -7,10 +7,10 @@ public class CookieConsentComponent : BaseComponent
     public CookieConsentComponent(IPage page) : base(page, page.Locator("[aria-label='Cookie banner']")) { }
 
     [Name("Accept All Button")]
-    public BaseButton AcceptAllButton => new BaseButton(Page, Page.Locator("button#onetrust-accept-btn-handler"));
+    public BaseButton AcceptAllButton => new (Page, Page.Locator("button#onetrust-accept-btn-handler"));
 
     [Name("Cookie Settings Button")]
-    public BaseButton CookieSettingsButton => new BaseButton(Page, Page.Locator("button#onetrust-pc-btn-handler.cookie-setting-link"));
+    public BaseButton CookieSettingsButton => new (Page, Page.Locator("button#onetrust-pc-btn-handler.cookie-setting-link"));
 
-    public async Task<bool> IsVisibleAsync() => await Locator.IsVisibleAsync();
+    public override async Task<bool> IsVisibleAsync() => await Locator.IsVisibleAsync();
 }

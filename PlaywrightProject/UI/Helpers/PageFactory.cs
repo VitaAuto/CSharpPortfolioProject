@@ -1,7 +1,5 @@
 ﻿using PlaywrightProject.UI.Pages;
 using Microsoft.Playwright;
-using System;
-using PlaywrightProject.UI.Pages;
 
 namespace PlaywrightProject.UI.Helpers
 {

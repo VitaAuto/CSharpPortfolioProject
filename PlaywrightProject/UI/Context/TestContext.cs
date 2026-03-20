@@ -10,7 +10,7 @@ namespace PlaywrightProject.UI.Context
 {
     public class TestContext
     {
-        public IPage? Page { get; set; }
-        public BasePage? CurrentPage { get; set; }
+        public IPage Page { get; set; } = default!;
+        public BasePage CurrentPage { get; set; } = default!;
     }
 }
