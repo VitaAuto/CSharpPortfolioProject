@@ -4,6 +4,7 @@ Feature: Users API
   Scenario Outline: Get user by id
     Given user is logged in
     And I have a user with first name "Sam", last name "Lamour", email "sam@mail.com", is active true
+    And the user email "sam@mail.com" is unique
     When I send a POST request to create the user
     Then the response status should be 201
     When I send a GET request to get the user by id
@@ -13,6 +14,7 @@ Feature: Users API
   Scenario Outline: Create user
     Given user is logged in
     And I have a user with first name "<FirstName>", last name "<LastName>", email "<Email>", is active <IsActive>
+    And the user email "<Email>" is unique
     When I send a POST request to create the user
     Then the response status should be <Status>
     And the response should contain "<ExpectedText>"
@@ -41,8 +43,10 @@ Feature: Users API
   Scenario Outline: Update user with PUT
     Given user is logged in
     And I have a user with first name "<FirstName>", last name "<LastName>", email "<Email>", is active <IsActive>
+    And the user email "<Email>" is unique
     When I send a POST request to create the user
-    And I send a PUT request to update the user with first name "<NewFirstName>", last name "<NewLastName>", email "<NewEmail>", is active <NewIsActive>
+    Then the user email "<NewEmail>" is unique
+    When I send a PUT request to update the user with first name "<NewFirstName>", last name "<NewLastName>", email "<NewEmail>", is active <NewIsActive>
     Then the response status should be <Status>
     And the response should contain "<ExpectedText>"
 
@@ -56,7 +60,9 @@ Feature: Users API
   Scenario Outline: Patch user with email
     Given user is logged in
     And I have a user with first name "<FirstName>", last name "<LastName>", email "<Email>", is active <IsActive>
+    And the user email "<Email>" is unique
     And I have another user with first name "<OtherFirstName>", last name "<OtherLastName>", email "<OtherEmail>", is active <OtherIsActive>
+    And the user email "<OtherEmail>" is unique
     When I send a POST request to create the user
     And I send a POST request to create the other user
     And I send a PATCH request to update the user with email "<PatchEmail>"

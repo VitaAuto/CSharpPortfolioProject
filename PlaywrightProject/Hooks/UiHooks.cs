@@ -39,7 +39,7 @@ namespace PlaywrightProject.Hooks
         {
             if (_scenarioContext.TestError != null && _testContext.Page != null)
             {
-                var fileName = $"screenshot_{System.DateTime.Now:yyyyMMdd_HHmmss_fff}.png";
+                var fileName = $"screenshot_{DateTime.Now:yyyyMMdd_HHmmss_fff}.png";
                 var filePath = Path.Combine("screenshots", fileName);
                 Directory.CreateDirectory("screenshots");
                 await _testContext.Page.ScreenshotAsync(new PageScreenshotOptions

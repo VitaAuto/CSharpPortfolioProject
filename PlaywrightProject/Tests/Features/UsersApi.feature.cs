@@ -138,15 +138,18 @@ namespace PlaywrightProject.Tests.Features
                         " active true", ((string)(null)), ((global::Reqnroll.Table)(null)), "And ");
 #line hidden
 #line 7
-    await testRunner.WhenAsync("I send a POST request to create the user", ((string)(null)), ((global::Reqnroll.Table)(null)), "When ");
+    await testRunner.AndAsync("the user email \"sam@mail.com\" is unique", ((string)(null)), ((global::Reqnroll.Table)(null)), "And ");
 #line hidden
 #line 8
-    await testRunner.ThenAsync("the response status should be 201", ((string)(null)), ((global::Reqnroll.Table)(null)), "Then ");
+    await testRunner.WhenAsync("I send a POST request to create the user", ((string)(null)), ((global::Reqnroll.Table)(null)), "When ");
 #line hidden
 #line 9
-    await testRunner.WhenAsync("I send a GET request to get the user by id", ((string)(null)), ((global::Reqnroll.Table)(null)), "When ");
+    await testRunner.ThenAsync("the response status should be 201", ((string)(null)), ((global::Reqnroll.Table)(null)), "Then ");
 #line hidden
 #line 10
+    await testRunner.WhenAsync("I send a GET request to get the user by id", ((string)(null)), ((global::Reqnroll.Table)(null)), "When ");
+#line hidden
+#line 11
     await testRunner.ThenAsync("the response status should be 200", ((string)(null)), ((global::Reqnroll.Table)(null)), "Then ");
 #line hidden
             }
@@ -180,7 +183,7 @@ namespace PlaywrightProject.Tests.Features
             global::Reqnroll.ScenarioInfo scenarioInfo = new global::Reqnroll.ScenarioInfo("Create user", null, tagsOfScenario, argumentsOfScenario, featureTags, pickleIndex);
             string[] tagsOfRule = ((string[])(null));
             global::Reqnroll.RuleInfo ruleInfo = null;
-#line 13
+#line 14
   this.ScenarioInitialize(scenarioInfo, ruleInfo);
 #line hidden
             if ((global::Reqnroll.TagHelper.ContainsIgnoreTag(scenarioInfo.CombinedTags) || global::Reqnroll.TagHelper.ContainsIgnoreTag(featureTags)))
@@ -190,19 +193,22 @@ namespace PlaywrightProject.Tests.Features
             else
             {
                 await this.ScenarioStartAsync();
-#line 14
+#line 15
     await testRunner.GivenAsync("user is logged in", ((string)(null)), ((global::Reqnroll.Table)(null)), "Given ");
 #line hidden
-#line 15
+#line 16
     await testRunner.AndAsync(string.Format("I have a user with first name \"{0}\", last name \"{1}\", email \"{2}\", is active {3}", firstName, lastName, email, isActive), ((string)(null)), ((global::Reqnroll.Table)(null)), "And ");
 #line hidden
-#line 16
-    await testRunner.WhenAsync("I send a POST request to create the user", ((string)(null)), ((global::Reqnroll.Table)(null)), "When ");
-#line hidden
 #line 17
-    await testRunner.ThenAsync(string.Format("the response status should be {0}", status), ((string)(null)), ((global::Reqnroll.Table)(null)), "Then ");
+    await testRunner.AndAsync(string.Format("the user email \"{0}\" is unique", email), ((string)(null)), ((global::Reqnroll.Table)(null)), "And ");
 #line hidden
 #line 18
+    await testRunner.WhenAsync("I send a POST request to create the user", ((string)(null)), ((global::Reqnroll.Table)(null)), "When ");
+#line hidden
+#line 19
+    await testRunner.ThenAsync(string.Format("the response status should be {0}", status), ((string)(null)), ((global::Reqnroll.Table)(null)), "Then ");
+#line hidden
+#line 20
     await testRunner.AndAsync(string.Format("the response should contain \"{0}\"", expectedText), ((string)(null)), ((global::Reqnroll.Table)(null)), "And ");
 #line hidden
             }
@@ -227,7 +233,7 @@ namespace PlaywrightProject.Tests.Features
             global::Reqnroll.ScenarioInfo scenarioInfo = new global::Reqnroll.ScenarioInfo("Create user with duplicate email", null, tagsOfScenario, argumentsOfScenario, featureTags, pickleIndex);
             string[] tagsOfRule = ((string[])(null));
             global::Reqnroll.RuleInfo ruleInfo = null;
-#line 27
+#line 29
   this.ScenarioInitialize(scenarioInfo, ruleInfo);
 #line hidden
             if ((global::Reqnroll.TagHelper.ContainsIgnoreTag(scenarioInfo.CombinedTags) || global::Reqnroll.TagHelper.ContainsIgnoreTag(featureTags)))
@@ -237,26 +243,26 @@ namespace PlaywrightProject.Tests.Features
             else
             {
                 await this.ScenarioStartAsync();
-#line 28
+#line 30
     await testRunner.GivenAsync("user is logged in", ((string)(null)), ((global::Reqnroll.Table)(null)), "Given ");
 #line hidden
-#line 29
+#line 31
     await testRunner.AndAsync(string.Format("I have a user with first name \"{0}\", last name \"{1}\", email \"{2}\", is active {3}", firstName, lastName, email, isActive), ((string)(null)), ((global::Reqnroll.Table)(null)), "And ");
 #line hidden
-#line 30
+#line 32
     await testRunner.AndAsync(string.Format("I have another user with first name \"{0}\", last name \"{1}\", email \"{2}\", is activ" +
                             "e {3}", otherFirstName, otherLastName, email, otherIsActive), ((string)(null)), ((global::Reqnroll.Table)(null)), "And ");
 #line hidden
-#line 31
+#line 33
     await testRunner.WhenAsync("I send a POST request to create the user", ((string)(null)), ((global::Reqnroll.Table)(null)), "When ");
 #line hidden
-#line 32
+#line 34
     await testRunner.AndAsync("I send a POST request to create the other user", ((string)(null)), ((global::Reqnroll.Table)(null)), "And ");
 #line hidden
-#line 33
+#line 35
     await testRunner.ThenAsync("the response status should be 409", ((string)(null)), ((global::Reqnroll.Table)(null)), "Then ");
 #line hidden
-#line 34
+#line 36
     await testRunner.AndAsync("the response should contain \"User with this email already exists.\"", ((string)(null)), ((global::Reqnroll.Table)(null)), "And ");
 #line hidden
             }
@@ -293,7 +299,7 @@ namespace PlaywrightProject.Tests.Features
             global::Reqnroll.ScenarioInfo scenarioInfo = new global::Reqnroll.ScenarioInfo("Update user with PUT", null, tagsOfScenario, argumentsOfScenario, featureTags, pickleIndex);
             string[] tagsOfRule = ((string[])(null));
             global::Reqnroll.RuleInfo ruleInfo = null;
-#line 41
+#line 43
   this.ScenarioInitialize(scenarioInfo, ruleInfo);
 #line hidden
             if ((global::Reqnroll.TagHelper.ContainsIgnoreTag(scenarioInfo.CombinedTags) || global::Reqnroll.TagHelper.ContainsIgnoreTag(featureTags)))
@@ -303,23 +309,29 @@ namespace PlaywrightProject.Tests.Features
             else
             {
                 await this.ScenarioStartAsync();
-#line 42
+#line 44
     await testRunner.GivenAsync("user is logged in", ((string)(null)), ((global::Reqnroll.Table)(null)), "Given ");
 #line hidden
-#line 43
+#line 45
     await testRunner.AndAsync(string.Format("I have a user with first name \"{0}\", last name \"{1}\", email \"{2}\", is active {3}", firstName, lastName, email, isActive), ((string)(null)), ((global::Reqnroll.Table)(null)), "And ");
 #line hidden
-#line 44
-    await testRunner.WhenAsync("I send a POST request to create the user", ((string)(null)), ((global::Reqnroll.Table)(null)), "When ");
-#line hidden
-#line 45
-    await testRunner.AndAsync(string.Format("I send a PUT request to update the user with first name \"{0}\", last name \"{1}\", e" +
-                            "mail \"{2}\", is active {3}", newFirstName, newLastName, newEmail, newIsActive), ((string)(null)), ((global::Reqnroll.Table)(null)), "And ");
-#line hidden
 #line 46
-    await testRunner.ThenAsync(string.Format("the response status should be {0}", status), ((string)(null)), ((global::Reqnroll.Table)(null)), "Then ");
+    await testRunner.AndAsync(string.Format("the user email \"{0}\" is unique", email), ((string)(null)), ((global::Reqnroll.Table)(null)), "And ");
 #line hidden
 #line 47
+    await testRunner.WhenAsync("I send a POST request to create the user", ((string)(null)), ((global::Reqnroll.Table)(null)), "When ");
+#line hidden
+#line 48
+    await testRunner.ThenAsync(string.Format("the user email \"{0}\" is unique", newEmail), ((string)(null)), ((global::Reqnroll.Table)(null)), "Then ");
+#line hidden
+#line 49
+    await testRunner.WhenAsync(string.Format("I send a PUT request to update the user with first name \"{0}\", last name \"{1}\", e" +
+                            "mail \"{2}\", is active {3}", newFirstName, newLastName, newEmail, newIsActive), ((string)(null)), ((global::Reqnroll.Table)(null)), "When ");
+#line hidden
+#line 50
+    await testRunner.ThenAsync(string.Format("the response status should be {0}", status), ((string)(null)), ((global::Reqnroll.Table)(null)), "Then ");
+#line hidden
+#line 51
     await testRunner.AndAsync(string.Format("the response should contain \"{0}\"", expectedText), ((string)(null)), ((global::Reqnroll.Table)(null)), "And ");
 #line hidden
             }
@@ -355,7 +367,7 @@ namespace PlaywrightProject.Tests.Features
             global::Reqnroll.ScenarioInfo scenarioInfo = new global::Reqnroll.ScenarioInfo("Patch user with email", null, tagsOfScenario, argumentsOfScenario, featureTags, pickleIndex);
             string[] tagsOfRule = ((string[])(null));
             global::Reqnroll.RuleInfo ruleInfo = null;
-#line 56
+#line 60
   this.ScenarioInitialize(scenarioInfo, ruleInfo);
 #line hidden
             if ((global::Reqnroll.TagHelper.ContainsIgnoreTag(scenarioInfo.CombinedTags) || global::Reqnroll.TagHelper.ContainsIgnoreTag(featureTags)))
@@ -365,29 +377,35 @@ namespace PlaywrightProject.Tests.Features
             else
             {
                 await this.ScenarioStartAsync();
-#line 57
+#line 61
     await testRunner.GivenAsync("user is logged in", ((string)(null)), ((global::Reqnroll.Table)(null)), "Given ");
 #line hidden
-#line 58
+#line 62
     await testRunner.AndAsync(string.Format("I have a user with first name \"{0}\", last name \"{1}\", email \"{2}\", is active {3}", firstName, lastName, email, isActive), ((string)(null)), ((global::Reqnroll.Table)(null)), "And ");
 #line hidden
-#line 59
+#line 63
+    await testRunner.AndAsync(string.Format("the user email \"{0}\" is unique", email), ((string)(null)), ((global::Reqnroll.Table)(null)), "And ");
+#line hidden
+#line 64
     await testRunner.AndAsync(string.Format("I have another user with first name \"{0}\", last name \"{1}\", email \"{2}\", is activ" +
                             "e {3}", otherFirstName, otherLastName, otherEmail, otherIsActive), ((string)(null)), ((global::Reqnroll.Table)(null)), "And ");
 #line hidden
-#line 60
+#line 65
+    await testRunner.AndAsync(string.Format("the user email \"{0}\" is unique", otherEmail), ((string)(null)), ((global::Reqnroll.Table)(null)), "And ");
+#line hidden
+#line 66
     await testRunner.WhenAsync("I send a POST request to create the user", ((string)(null)), ((global::Reqnroll.Table)(null)), "When ");
 #line hidden
-#line 61
+#line 67
     await testRunner.AndAsync("I send a POST request to create the other user", ((string)(null)), ((global::Reqnroll.Table)(null)), "And ");
 #line hidden
-#line 62
+#line 68
     await testRunner.AndAsync(string.Format("I send a PATCH request to update the user with email \"{0}\"", patchEmail), ((string)(null)), ((global::Reqnroll.Table)(null)), "And ");
 #line hidden
-#line 63
+#line 69
     await testRunner.ThenAsync(string.Format("the response status should be {0}", status), ((string)(null)), ((global::Reqnroll.Table)(null)), "Then ");
 #line hidden
-#line 64
+#line 70
     await testRunner.AndAsync(string.Format("the response should contain \"{0}\"", expectedText), ((string)(null)), ((global::Reqnroll.Table)(null)), "And ");
 #line hidden
             }
@@ -417,7 +435,7 @@ namespace PlaywrightProject.Tests.Features
             global::Reqnroll.ScenarioInfo scenarioInfo = new global::Reqnroll.ScenarioInfo("Delete user", null, tagsOfScenario, argumentsOfScenario, featureTags, pickleIndex);
             string[] tagsOfRule = ((string[])(null));
             global::Reqnroll.RuleInfo ruleInfo = null;
-#line 72
+#line 78
   this.ScenarioInitialize(scenarioInfo, ruleInfo);
 #line hidden
             if ((global::Reqnroll.TagHelper.ContainsIgnoreTag(scenarioInfo.CombinedTags) || global::Reqnroll.TagHelper.ContainsIgnoreTag(featureTags)))
@@ -427,25 +445,25 @@ namespace PlaywrightProject.Tests.Features
             else
             {
                 await this.ScenarioStartAsync();
-#line 73
+#line 79
     await testRunner.GivenAsync("user is logged in", ((string)(null)), ((global::Reqnroll.Table)(null)), "Given ");
 #line hidden
-#line 74
+#line 80
     await testRunner.AndAsync(string.Format("I have a user with first name \"{0}\", last name \"{1}\", email \"{2}\", is active {3}", firstName, lastName, email, isActive), ((string)(null)), ((global::Reqnroll.Table)(null)), "And ");
 #line hidden
-#line 75
+#line 81
     await testRunner.WhenAsync("I send a POST request to create the user", ((string)(null)), ((global::Reqnroll.Table)(null)), "When ");
 #line hidden
-#line 76
+#line 82
     await testRunner.AndAsync("I send a DELETE request to delete the user", ((string)(null)), ((global::Reqnroll.Table)(null)), "And ");
 #line hidden
-#line 77
+#line 83
     await testRunner.ThenAsync("the response status should be 204", ((string)(null)), ((global::Reqnroll.Table)(null)), "Then ");
 #line hidden
-#line 78
+#line 84
     await testRunner.WhenAsync("I send a GET request to get the user by id", ((string)(null)), ((global::Reqnroll.Table)(null)), "When ");
 #line hidden
-#line 79
+#line 85
     await testRunner.ThenAsync("the response status should be 404", ((string)(null)), ((global::Reqnroll.Table)(null)), "Then ");
 #line hidden
             }
@@ -462,7 +480,7 @@ namespace PlaywrightProject.Tests.Features
             global::Reqnroll.ScenarioInfo scenarioInfo = new global::Reqnroll.ScenarioInfo("Delete user by non-existing id", null, tagsOfScenario, argumentsOfScenario, featureTags, pickleIndex);
             string[] tagsOfRule = ((string[])(null));
             global::Reqnroll.RuleInfo ruleInfo = null;
-#line 86
+#line 92
   this.ScenarioInitialize(scenarioInfo, ruleInfo);
 #line hidden
             if ((global::Reqnroll.TagHelper.ContainsIgnoreTag(scenarioInfo.CombinedTags) || global::Reqnroll.TagHelper.ContainsIgnoreTag(featureTags)))
@@ -472,13 +490,13 @@ namespace PlaywrightProject.Tests.Features
             else
             {
                 await this.ScenarioStartAsync();
-#line 87
+#line 93
     await testRunner.GivenAsync("user is logged in", ((string)(null)), ((global::Reqnroll.Table)(null)), "Given ");
 #line hidden
-#line 88
+#line 94
     await testRunner.WhenAsync("I send a DELETE request to delete the user by id 99999", ((string)(null)), ((global::Reqnroll.Table)(null)), "When ");
 #line hidden
-#line 89
+#line 95
     await testRunner.ThenAsync("the response status should be 404", ((string)(null)), ((global::Reqnroll.Table)(null)), "Then ");
 #line hidden
             }

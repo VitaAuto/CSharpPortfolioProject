@@ -1,23 +1,21 @@
-﻿using RestSharp;
+﻿using Newtonsoft.Json;
+using PlaywrightProject.API.Auth;
 using PlaywrightProject.API.Models;
 using PlaywrightProject.Config;
+using RestSharp;
 
 namespace PlaywrightProject.API.ApiClient
 {
-    public class UsersApiClient(string baseUrl)
+    public class UsersApiClient(string baseUrl, ITokenProvider tokenProvider)
     {
         private readonly RestClient _client = new(baseUrl);
-        private string? _token;
-
-        public void SetToken(string token)
-        {
-            _token = token;
-        }
+        private readonly ITokenProvider _tokenProvider = tokenProvider;
 
         private void AddAuthHeader(RestRequest request)
         {
-            if (!string.IsNullOrEmpty(_token))
-                request.AddHeader("Authorization", $"Bearer {_token}");
+            var token = _tokenProvider.GetToken();
+            if (!string.IsNullOrEmpty(token))
+                request.AddHeader("Authorization", $"Bearer {token}");
         }
 
         public RestResponse CreateUser(User user)
