@@ -3,17 +3,29 @@ using Microsoft.Playwright;
 
 namespace PlaywrightProject.UI.Helpers
 {
-    public static class PageFactory
+    public class PageFactory : IPageFactory
     {
-        public static BasePage CreatePageByName(string pageName, IPage playwrightPage)
+        private readonly IPage _playwrightPage;
+
+        public PageFactory(IPage playwrightPage)
+        {
+            _playwrightPage = playwrightPage;
+        }
+
+        public T Create<T>() where T : BasePage
+        {
+            return (T)Activator.CreateInstance(typeof(T), _playwrightPage)!;
+        }
+
+        public BasePage CreatePageByName(string pageName)
         {
             return pageName.ToLower() switch
             {
-                "main" => new MainPage(playwrightPage),
-                "services" => new ServicesPage(playwrightPage),
-                "insights" => new InsightsPage(playwrightPage),
-                "about" => new AboutPage(playwrightPage),
-                "careers" => new CareersPage(playwrightPage),
+                "main" => Create<MainPage>(),
+                "services" => Create<ServicesPage>(),
+                "insights" => Create<InsightsPage>(),
+                "about" => Create<AboutPage>(),
+                "careers" => Create<CareersPage>(),
                 _ => throw new ArgumentException($"Page '{pageName}' is not defined.")
             };
         }

@@ -7,9 +7,9 @@ using PlaywrightProject.UI.Components;
 
 namespace PlaywrightProject.UI.Helpers
 {
-    public static class ElementFinder
+    public class ElementFinder : IElementFinder
     {
-        public static object? FindElementByName(object pageObject, string name)
+        public object? FindElementByName(object pageObject, string name)
         {
             var type = pageObject.GetType();
 

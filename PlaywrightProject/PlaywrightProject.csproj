@@ -12,6 +12,16 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Remove="appsettings.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="appsettings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Allure.NUnit" Version="2.14.1" />
     <PackageReference Include="Allure.Reqnroll" Version="2.14.1" />
     <PackageReference Include="dotenv.net" Version="4.0.0" />

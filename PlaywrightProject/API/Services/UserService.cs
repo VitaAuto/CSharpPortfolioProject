@@ -11,7 +11,7 @@ namespace PlaywrightProject.API.Services
         public void EnsureUserEmailIsUnique(string email)
         {
             var response = _usersApiClient.GetAllUsers();
-            var users = JsonConvert.DeserializeObject<List<User>>(response.Content) ?? new List<User>();
+            var users = JsonConvert.DeserializeObject<List<User>>(response.Content) ?? [];
             var usersWithSameEmail = users.Where(u => u.Email == email).ToList();
 
             foreach (var user in usersWithSameEmail)

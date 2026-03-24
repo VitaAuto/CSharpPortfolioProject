@@ -3,14 +3,9 @@ using System.Threading.Tasks;
 
 namespace PlaywrightProject.UI.Pages
 {
-    public abstract class BasePage
+    public abstract class BasePage(IPage page)
     {
-        protected readonly IPage Page;
-
-        protected BasePage(IPage page)
-        {
-            Page = page;
-        }
+        protected readonly IPage Page = page;
 
         public abstract string Url { get; }
 

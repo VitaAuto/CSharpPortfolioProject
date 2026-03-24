@@ -1,61 +1,38 @@
 ﻿using Microsoft.Playwright;
-using PlaywrightProject.UI.Pages;
-using Reqnroll;
-using System.Threading.Tasks;
-using System.Collections.Generic;
 using PlaywrightProject.UI.Context;
-using System.IO;
+using PlaywrightProject.UI.Helpers;
+using Reqnroll;
+using Reqnroll.BoDi;
 
 namespace PlaywrightProject.Hooks
 {
-
     [Binding]
-    public class UiHooks(ScenarioContext scenarioContext, TestContext testContext)
+    public class UiHooks(IObjectContainer container, IBrowser browser, TestContext testContext)
     {
+        private readonly IObjectContainer _container = container;
+        private readonly IBrowser _browser = browser;
         private readonly TestContext _testContext = testContext;
-        private readonly ScenarioContext _scenarioContext = scenarioContext;
-        private PlaywrightDriver? _driver;
+        private IBrowserContext? _browserContext;
+        private IPage? _page;
 
         [BeforeScenario]
         public async Task BeforeScenario()
         {
-            _driver = new PlaywrightDriver();
-            await _driver.InitAsync();
-            if (_driver.Page != null)
+            _browserContext = await _browser.NewContextAsync(new BrowserNewContextOptions
             {
-                _testContext.Page = _driver.Page;
+                UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+                ViewportSize = new ViewportSize { Width = 1920, Height = 1080 }
+            });
+            _page = await _browserContext.NewPageAsync();
 
-                await _testContext.Page.SetExtraHTTPHeadersAsync(new Dictionary<string, string>
-                {
-                    ["User-Agent"] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-                });
+            _container.RegisterInstanceAs(_browserContext);
+            _container.RegisterInstanceAs(_page);
+            _container.RegisterFactoryAs<IPageFactory>(c => new PageFactory(_page));
 
-                _testContext.CurrentPage = new MainPage(_testContext.Page);
-            }
-        }
-
-        [AfterStep]
-        public async Task AfterStep()
-        {
-            if (_scenarioContext.TestError != null && _testContext.Page != null)
-            {
-                var fileName = $"screenshot_{DateTime.Now:yyyyMMdd_HHmmss_fff}.png";
-                var filePath = Path.Combine("screenshots", fileName);
-                Directory.CreateDirectory("screenshots");
-                await _testContext.Page.ScreenshotAsync(new PageScreenshotOptions
-                {
-                    Path = filePath,
-                    FullPage = true
-                });
-                Console.WriteLine($"Screenshot saved: {filePath}");
-            }
+            _testContext.Page = _page;
         }
 
         [AfterScenario]
-        public async Task AfterScenario()
-        {
-            if (_driver != null)
-                await _driver.CleanupAsync();
-        }
+        public async Task AfterScenario() => await _browserContext.CloseAsync();
     }
 }
