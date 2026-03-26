@@ -1,0 +1,57 @@
+name: k6 Performance Tests
+
+on:
+  workflow_dispatch:
+
+jobs:
+  k6-test:
+    runs-on: ubuntu-latest
+    env:
+      API_BASE_URL: ${{ secrets.API_BASE_URL }}
+      VAULT_TOKEN: ${{ secrets.VAULT_TOKEN }}
+      VAULT_URI: ${{ secrets.VAULT_URI }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Compose
+        run: |
+          docker compose -f docker-compose.performance.yml up -d --build
+
+      - name: Wait for API to be ready
+        run: |
+          for i in {1..30}; do
+            if curl http://localhost:5043/swagger/index.html > /dev/null 2>&1; then
+              echo "API is up!"
+              break
+            fi
+            echo "Waiting for API to start..."
+            sleep 2
+          done
+
+      - name: Install k6
+        run: |
+          sudo apt-get update
+          curl -s https://github.com/grafana/k6/releases/download/v0.48.0/k6-v0.48.0-linux-amd64.tar.gz | tar xz
+          sudo mv k6-v0.48.0-linux-amd64/k6 /usr/local/bin/
+
+      - name: Wait for Vault to be ready
+        run: |
+          for i in {1..30}; do
+            if curl --header "X-Vault-Token: $VAULT_TOKEN" $VAULT_URI/v1/secret/data/myapp | grep -q 'username'; then
+              echo "Vault secret is ready!"
+              break
+            fi
+            echo "Waiting for Vault secret to be available..."
+            sleep 2
+          done
+
+      - name: Get credentials from Vault (pwsh)
+        shell: pwsh
+        run: |
+          $CREDS = Invoke-RestMethod -Headers @{"X-Vault-Token" = "${{ env.VAULT_TOKEN }}"} -Uri "${{ env.VAULT_URI }}/v1/secret/data/myapp"
+          "K6_USERNAME=$($CREDS.data.data.username)" | Out-File -FilePath $env:GITHUB_ENV -Append
+          "K6_PASSWORD=$($CREDS.data.data.password)" | Out-File -FilePath $env:GITHUB_ENV -Append
+
+      - name: Run k6 performance tests with InfluxDB output
+        run: k6 run --out influxdb=http://localhost:8086/k6 PlaywrightProject/Tests/Performance/users-api-crud.js

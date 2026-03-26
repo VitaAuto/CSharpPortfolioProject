@@ -1,0 +1,77 @@
+version: '3.8'
+
+services:
+  vault:
+    image: vault:1.13.3
+    ports:
+      - "8200:8200"
+    cap_add:
+      - IPC_LOCK
+    environment:
+      VAULT_DEV_ROOT_TOKEN_ID: "root"
+      VAULT_DEV_LISTEN_ADDRESS: "0.0.0.0:8200"
+    command: server -dev -dev-root-token-id=root
+
+  vault-init:
+    image: curlimages/curl:8.5.0
+    depends_on:
+      - vault
+    entrypoint: >
+      sh -c "
+        sleep 3 &&
+        curl --header 'X-Vault-Token: root' --request POST --data '{\"data\": {\"username\": \"admin\", \"password\": \"password123\", \"jwtsecret\": \"my_super_secret_key_that_is_32_chars!\"}}' http://vault:8200/v1/secret/data/myapp
+      "
+
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: myuser
+      POSTGRES_PASSWORD: mypass
+      POSTGRES_DB: mydb
+    ports:
+      - "5454:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+
+  api:
+    build:
+      context: ./ApiPortfolioProject
+      dockerfile: Dockerfile
+    environment:
+      Vault__Uri: "http://vault:8200"
+      Vault__Token: "root"
+      ASPNETCORE_ENVIRONMENT: "Development"
+      ASPNETCORE_URLS: "http://+:5043"
+      ConnectionStrings__DefaultConnection: "Host=db;Port=5432;Database=mydb;Username=myuser;Password=mypass"
+    ports:
+      - "5043:5043"
+    depends_on:
+      - vault
+      - vault-init
+      - db
+
+  influxdb:
+    image: influxdb:1.8
+    ports:
+      - "8086:8086"
+    environment:
+      INFLUXDB_DB: k6
+    volumes:
+      - influxdb-data:/var/lib/influxdb
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: admin
+    depends_on:
+      - influxdb
+    volumes:
+      - grafana-data:/var/lib/grafana
+
+volumes:
+  pgdata:
+  influxdb-data:
+  grafana-data:    

@@ -161,8 +161,8 @@ namespace PlaywrightProject.Tests.Features
         [global::NUnit.Framework.CategoryAttribute("smoke")]
         [global::NUnit.Framework.TestCaseAttribute("Ivan", "Ivanov", "ivan@mail.com", "true", "201", "Ivanov", "1", null)]
         [global::NUnit.Framework.TestCaseAttribute("Petr", "Petrov", "petr@mail.com", "false", "201", "Petrov", "2", null)]
-        [global::NUnit.Framework.TestCaseAttribute("", "Ivanov", "ivan@mail.com", "true", "400", "FirstName is required", "3", null)]
-        [global::NUnit.Framework.TestCaseAttribute("Ivan", "Ivanov", "invalidemail", "true", "400", "Email is not valid", "4", null)]
+        [global::NUnit.Framework.TestCaseAttribute("", "Larson", "larson@mail.com", "true", "400", "FirstName is required", "3", null)]
+        [global::NUnit.Framework.TestCaseAttribute("Joe", "Konrad", "invalidemail", "true", "400", "Email is not valid", "4", null)]
         public async global::System.Threading.Tasks.Task CreateUser(string firstName, string lastName, string email, string isActive, string status, string expectedText, string @__pickleIndex, string[] exampleTags)
         {
             string[] @__tags = new string[] {
@@ -217,7 +217,7 @@ namespace PlaywrightProject.Tests.Features
         
         [global::NUnit.Framework.TestAttribute()]
         [global::NUnit.Framework.DescriptionAttribute("Create user with duplicate email")]
-        [global::NUnit.Framework.TestCaseAttribute("Ivan", "Ivanov", "ivan@mail.com", "true", "Petr", "Petrov", "false", "5", null)]
+        [global::NUnit.Framework.TestCaseAttribute("Lola", "Ivanova", "lola@mail.com", "true", "Henry", "Muler", "false", "5", null)]
         public async global::System.Threading.Tasks.Task CreateUserWithDuplicateEmail(string firstName, string lastName, string email, string isActive, string otherFirstName, string otherLastName, string otherIsActive, string @__pickleIndex, string[] exampleTags)
         {
             string[] tagsOfScenario = exampleTags;
@@ -341,7 +341,7 @@ namespace PlaywrightProject.Tests.Features
         [global::NUnit.Framework.TestAttribute()]
         [global::NUnit.Framework.DescriptionAttribute("Patch user with email")]
         [global::NUnit.Framework.CategoryAttribute("smoke")]
-        [global::NUnit.Framework.TestCaseAttribute("Ivan1", "Ivanov1", "ivan1@mail.com", "true", "Petr1", "Petrov1", "other1@mail.com", "false", "invalidemail", "400", "Email is not valid", "9", null)]
+        [global::NUnit.Framework.TestCaseAttribute("Sofia", "Rudova", "sofia@mail.com", "true", "Kui", "Serdov", "kui@mail.com", "false", "invalidemail", "400", "Email is not valid", "9", null)]
         public async global::System.Threading.Tasks.Task PatchUserWithEmail(string firstName, string lastName, string email, string isActive, string otherFirstName, string otherLastName, string otherEmail, string otherIsActive, string patchEmail, string status, string expectedText, string @__pickleIndex, string[] exampleTags)
         {
             string[] @__tags = new string[] {

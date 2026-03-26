@@ -20,11 +20,11 @@ Feature: Users API
     And the response should contain "<ExpectedText>"
 
     Examples:
-      | FirstName | LastName | Email         | IsActive | Status | ExpectedText                                |
-      | Ivan      | Ivanov   | ivan@mail.com | true     | 201    | Ivanov                                      |
-      | Petr      | Petrov   | petr@mail.com | false    | 201    | Petrov                                      |
-      |           | Ivanov   | ivan@mail.com | true     | 400    | FirstName is required                       |
-      | Ivan      | Ivanov   | invalidemail  | true     | 400    | Email is not valid                          |
+      | FirstName | LastName | Email            | IsActive | Status | ExpectedText                                |
+      | Ivan      | Ivanov   | ivan@mail.com    | true     | 201    | Ivanov                                      |
+      | Petr      | Petrov   | petr@mail.com    | false    | 201    | Petrov                                      |
+      |           | Larson   | larson@mail.com  | true     | 400    | FirstName is required                       |
+      | Joe       | Konrad   | invalidemail     | true     | 400    | Email is not valid                          |
 
   Scenario Outline: Create user with duplicate email
     Given user is logged in
@@ -37,7 +37,7 @@ Feature: Users API
 
     Examples:
       | FirstName | LastName | Email         | IsActive | OtherFirstName | OtherLastName | OtherIsActive |
-      | Ivan      | Ivanov   | ivan@mail.com | true     | Petr           | Petrov        | false         |
+      | Lola      | Ivanova  | lola@mail.com | true     | Henry          | Muler         | false         |
 
   @smoke
   Scenario Outline: Update user with PUT
@@ -71,7 +71,7 @@ Feature: Users API
 
     Examples:
       | FirstName  | LastName  | Email          | IsActive | OtherFirstName | OtherLastName  | OtherEmail       | OtherIsActive | PatchEmail      | Status | ExpectedText                                 |
-      | Ivan1      | Ivanov1   | ivan1@mail.com | true     | Petr1          | Petrov1        | other1@mail.com  | false         | invalidemail    | 400    | Email is not valid                           |
+      | Sofia      | Rudova    | sofia@mail.com | true     | Kui            | Serdov         | kui@mail.com     | false         | invalidemail    | 400    | Email is not valid                           |
      
 
   @smoke

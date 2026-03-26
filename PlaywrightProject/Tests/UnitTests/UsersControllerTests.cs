@@ -10,6 +10,7 @@ using System.Collections.Generic;
 namespace PlaywrightProject.Tests.UnitTests
 {
     [TestFixture]
+    [Parallelizable(ParallelScope.None)]
     public class UsersControllerTests
     {
         private Mock<IUserRepository>? _repoMock;
@@ -128,8 +129,7 @@ namespace PlaywrightProject.Tests.UnitTests
 
             result.Should().BeOfType<OkObjectResult>();
             if (result is OkObjectResult ok)
-                ok.Value.Should().BeEquivalentTo
-(users);
+                ok.Value.Should().BeEquivalentTo(users);
         }
 
         // --- UPDATE ---

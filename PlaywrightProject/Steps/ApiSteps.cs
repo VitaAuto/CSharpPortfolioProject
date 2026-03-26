@@ -12,12 +12,20 @@ using System.Net;
 namespace PlaywrightProject.Steps
 {
     [Binding]
-    public class UsersApiSteps(UsersApiContext context, UserService userService, UsersApiClient usersApiClient, ITokenProvider tokenProvider)
+    public class UsersApiSteps
     {
-        private readonly UsersApiContext _context = context;
-        private readonly UserService _userService = userService;
-        private readonly UsersApiClient _usersApiClient = usersApiClient;
-        private readonly ITokenProvider _tokenProvider = tokenProvider;
+        private readonly ApiContext _context;
+        private readonly UserService _userService;
+        private readonly UsersApiClient _usersApiClient;
+        private readonly ITokenProvider _tokenProvider;
+
+        public UsersApiSteps(ApiContext context, UserService userService, UsersApiClient usersApiClient, ITokenProvider tokenProvider)
+        {
+            _context = context;
+            _userService = userService;
+            _usersApiClient = usersApiClient;
+            _tokenProvider = tokenProvider;
+        }
 
         [Given(@"user is logged in")]
         public async Task GivenTheUserIsLoggedIn()
@@ -83,10 +91,10 @@ namespace PlaywrightProject.Steps
         [When(@"I send a POST request to create the other user")]
         public void WhenISendPOSTRequestToCreateOtherUser()
         {
-            var resp = _usersApiClient.CreateUser(_context.OtherUser);
-            _context.Response = resp;
-            Console.WriteLine($"API response after creation another user: {resp.Content}");
-            if (resp.StatusCode == HttpStatusCode.Created && !string.IsNullOrEmpty(resp.Content) && JsonConvert.DeserializeObject<User>(resp.Content) is User createdUser)
+            var response = _usersApiClient.CreateUser(_context.OtherUser);
+            _context.Response = response;
+            Console.WriteLine($"API response after creation another user: {response.Content}");
+            if (response.StatusCode == HttpStatusCode.Created && !string.IsNullOrEmpty(response.Content) && JsonConvert.DeserializeObject<User>(response.Content) is User createdUser)
             {
                 _context.OtherUserId = createdUser.Id;
                 _context.OtherUser = createdUser;
@@ -94,7 +102,7 @@ namespace PlaywrightProject.Steps
             }
             else
             {
-                Console.WriteLine($"Another user creation error: {resp.StatusCode} {resp.Content}");
+                Console.WriteLine($"Another user creation error: {response.StatusCode} {response.Content}");
             }
         }
 

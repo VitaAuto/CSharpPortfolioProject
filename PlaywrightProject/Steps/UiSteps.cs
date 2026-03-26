@@ -1,4 +1,5 @@
 ﻿using FluentAssertions;
+using NUnit.Framework;
 using PlaywrightProject.UI.Components;
 using PlaywrightProject.UI.Context;
 using PlaywrightProject.UI.Helpers;
@@ -9,26 +10,33 @@ using System.Threading.Tasks;
 namespace PlaywrightProject.Steps
 {
     [Binding]
-    public class CommonUiSteps(TestContext testContext, IPageFactory pageFactory, IElementFinder elementFinder)
+    public class UiSteps
     {
-        private readonly TestContext _testContext = testContext;
-        private readonly IPageFactory _pageFactory = pageFactory;
-        private readonly IElementFinder _elementFinder = elementFinder;
+        private readonly PageContext _context;
+        private readonly IPageFactory _pageFactory;
+        private readonly IElementFinder _elementFinder;
+
+        public UiSteps(PageContext context, IPageFactory pageFactory, IElementFinder elementFinder)
+        {
+            _context = context;
+            _pageFactory = pageFactory;
+            _elementFinder = elementFinder;
+        }
 
         [Given(@"user opens '(.*)' page")]
         public async Task GivenUserIsOnPage(string pageName)
         {
-            _testContext.CurrentPage = _pageFactory.CreatePageByName(pageName);
-            await _testContext.CurrentPage.OpenAsync();
-            await _testContext.CurrentPage.WaitForLoadAsync();
+            _context.CurrentPage = _pageFactory.CreatePageByName(pageName);
+            await _context.CurrentPage.OpenAsync();
+            await _context.CurrentPage.WaitForLoadAsync();
         }
 
         [Then(@"user should be navigated to '(.*)' page")]
         public Task ThenUserMovesToPage(string pageName)
         {
             var expectedUrl = _pageFactory.CreatePageByName(pageName).Url;
-            var actualUrl = _testContext.CurrentPage.GetCurrentUrl();
-            _testContext.CurrentPage.GetCurrentUrl().Should().Be(expectedUrl, $"Should be navigated to {pageName}");
+            var actualUrl = _context.CurrentPage.GetCurrentUrl();
+            _context.CurrentPage.GetCurrentUrl().Should().Be(expectedUrl, $"Should be navigated to {pageName}");
             actualUrl.Should().Be(expectedUrl, $"Should be navigated to {pageName}");
             Console.WriteLine($"Current page is: {actualUrl}");
             return Task.CompletedTask;
@@ -37,7 +45,7 @@ namespace PlaywrightProject.Steps
         [When(@"user clicks ""(.*)""")]
         public async Task WhenUserClicksElement(string elementName)
         {
-            var element = _elementFinder.FindElementByName(_testContext.CurrentPage, elementName);
+            var element = _elementFinder.FindElementByName(_context.CurrentPage, elementName);
             if (element is BaseButton button)
             {
                 var count = await button.GetCountAsync();
@@ -57,7 +65,7 @@ namespace PlaywrightProject.Steps
         [Then(@"""(.*)"" should be present")]
         public async Task ThenElementShouldBePresent(string elementName)
         {
-            var element = _elementFinder.FindElementByName(_testContext.CurrentPage, elementName);
+            var element = _elementFinder.FindElementByName(_context.CurrentPage, elementName);
             if (element is BaseComponent component)
             {
                 await component.WaitForVisibleAsync(5000);
@@ -75,7 +83,7 @@ namespace PlaywrightProject.Steps
             foreach (var row in table.Rows)
             {
                 var elementName = row[0];
-                var element = _elementFinder.FindElementByName(_testContext.CurrentPage, elementName);
+                var element = _elementFinder.FindElementByName(_context.CurrentPage, elementName);
                 if (element is BaseComponent component)
                 {
                     (await component.IsVisibleAsync()).Should().BeTrue($"Menu option '{elementName}' should be present");
@@ -90,14 +98,14 @@ namespace PlaywrightProject.Steps
         [Then(@"user should be navigated to ""(.*)""")]
         public async Task ThenIShouldBeNavigatedTo(string expectedUrl)
         {
-            await _testContext.CurrentPage.WaitForUrlAsync(expectedUrl);
-            _testContext.CurrentPage.GetCurrentUrl().Should().Be(expectedUrl, $"Should be navigated to {expectedUrl}");
+            await _context.CurrentPage.WaitForUrlAsync(expectedUrl);
+            _context.CurrentPage.GetCurrentUrl().Should().Be(expectedUrl, $"Should be navigated to {expectedUrl}");
         }
 
         [When(@"user enters '(.*)' text")]
         public async Task WhenUserEntersText(string text)
         {
-            var element = _elementFinder.FindElementByName(_testContext.CurrentPage, "Search Input");
+            var element = _elementFinder.FindElementByName(_context.CurrentPage, "Search Input");
             if (element is BaseTextField textField)
                 await textField.FillAsync(text);
             else
@@ -107,7 +115,7 @@ namespace PlaywrightProject.Steps
         [Then(@"search results should be present")]
         public async Task ThenSearchResultsShouldBePresent()
         {
-            var element = _elementFinder.FindElementByName(_testContext.CurrentPage, "Search Results");
+            var element = _elementFinder.FindElementByName(_context.CurrentPage, "Search Results");
             if (element is SearchResultsComponent resultsComponent)
             {
                 await resultsComponent.WaitForResultsAsync();
@@ -124,7 +132,7 @@ namespace PlaywrightProject.Steps
         [Then(@"search results should not be present")]
         public async Task ThenSearchResultsShouldNotBePresent()
         {
-            var element = _elementFinder.FindElementByName(_testContext.CurrentPage, "Search Results");
+            var element = _elementFinder.FindElementByName(_context.CurrentPage, "Search Results");
             if (element is SearchResultsComponent resultsComponent)
             {
                 var message = await resultsComponent.WaitForNoResultsMessageAsync();
@@ -141,7 +149,7 @@ namespace PlaywrightProject.Steps
         [When(@"user hovers over ""(.*)""")]
         public async Task WhenUserHoversOverElement(string elementName)
         {
-            var element = _elementFinder.FindElementByName(_testContext.CurrentPage, elementName);
+            var element = _elementFinder.FindElementByName(_context.CurrentPage, elementName);
             if (element is BaseButton button)
                 await button.HoverAsync();
             else
@@ -151,7 +159,7 @@ namespace PlaywrightProject.Steps
         [Then(@"hand pointer appears over ""(.*)""")]
         public async Task ThenHandPointerAppearsOverElement(string elementName)
         {
-            var element = _elementFinder.FindElementByName(_testContext.CurrentPage, elementName);
+            var element = _elementFinder.FindElementByName(_context.CurrentPage, elementName);
             if (element is BaseButton button)
             {
                 await button.HoverAsync();
@@ -165,7 +173,7 @@ namespace PlaywrightProject.Steps
         [Then(@"""(.*)"" should be hidden")]
         public async Task PopupShouldNotBeVisible(string popupName)
         {
-            var popup = _elementFinder.FindElementByName(_testContext.CurrentPage, popupName);
+            var popup = _elementFinder.FindElementByName(_context.CurrentPage, popupName);
             if (popup is BaseComponent component)
             {
                 await component.WaitForHiddenAsync();

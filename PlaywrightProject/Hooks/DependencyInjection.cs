@@ -31,13 +31,11 @@ namespace PlaywrightProject.Hooks
             container.RegisterInstanceAs(playwright);
             container.RegisterInstanceAs(browser);
 
-            container.RegisterTypeAs<TestContext, TestContext>();
             container.RegisterTypeAs<ElementFinder, IElementFinder>();
 
             container.RegisterTypeAs<TokenProvider, ITokenProvider>();
             container.RegisterFactoryAs<UsersApiClient>(c => new UsersApiClient(ApiConfig.ApiBaseUrl, c.Resolve<ITokenProvider>()));
             container.RegisterTypeAs<UserService, UserService>();
-            container.RegisterTypeAs<UsersApiContext, UsersApiContext>();
         }
     }
 }

@@ -6,9 +6,9 @@ using Reqnroll;
 namespace PlaywrightProject.Hooks
 {
     [Binding]
-    public class ApiHooks(UsersApiContext context, UsersApiClient usersApiClient)
+    public class ApiHooks(ApiContext context, UsersApiClient usersApiClient)
     {
-        private readonly UsersApiContext _context = context;
+        private readonly ApiContext _context = context;
         private readonly UsersApiClient _usersApiClient = usersApiClient;
 
         [AfterScenario]

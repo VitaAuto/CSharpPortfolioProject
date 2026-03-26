@@ -1,0 +1,5 @@
+{
+  "runtime": {
+    "testThreadCount": 3
+  }
+}
