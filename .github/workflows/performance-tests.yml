@@ -66,7 +66,7 @@ jobs:
         run: npm install -g k6-html-reporter
 
       - name: Generate k6 HTML report
-        run: k6-html-reporter --json k6-result.json --out k6-report.html
+        run: npx k6-html-reporter --json k6-result.json --out k6-report.html
 
       - name: Upload k6 HTML report as artifact
         uses: actions/upload-artifact@v4
