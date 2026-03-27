@@ -60,7 +60,7 @@ jobs:
         with:
           dotnet-version: '8.0.x'
 
-      - name: Run API tests and save TRX
+      - name: Run API tests and save TRX results
         env:
           API_BASE_URL: ${{ secrets.API_BASE_URL }}
           VAULT_URI: ${{ secrets.VAULT_URI }}
