@@ -42,13 +42,10 @@ jobs:
       - name: Build CSharpPortfolioProject
         run: dotnet build ApiAndUiProject/ApiAndUiProject.csproj --no-restore --configuration Release
 
-      - name: Install Playwright .NET Browsers
-        run: pwsh ApiAndUiProject/bin/Release/net8.0/playwright.ps1 install
-
       - name: Clean Allure results
         run: rm -rf allure-results
 
-      - name: Run API tests and save TRX results
+      - name: Run API tests
         env:
           API_BASE_URL: ${{ secrets.API_BASE_URL }}
           VAULT_URI: ${{ secrets.VAULT_URI }}
