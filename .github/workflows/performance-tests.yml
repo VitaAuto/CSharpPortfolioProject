@@ -54,5 +54,28 @@ jobs:
           "K6_USERNAME=$($CREDS.data.data.username)" | Out-File -FilePath $env:GITHUB_ENV -Append
           "K6_PASSWORD=$($CREDS.data.data.password)" | Out-File -FilePath $env:GITHUB_ENV -Append
 
-      - name: Run k6 performance tests with InfluxDB output
-        run: k6 run --out influxdb=http://localhost:8086/k6 ApiAndUiProject/Tests/Performance/users-api-crud.js
+      - name: Run k6 performance tests and save result
+        run: k6 run --out json=k6-result.json ApiAndUiProject/Tests/Performance/users-api-crud.js
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install k6-html-reporter
+        run: npm install -g k6-html-reporter
+
+      - name: Generate k6 HTML report
+        run: k6-html-reporter --json k6-result.json --out k6-report.html
+
+      - name: Upload k6 HTML report as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: k6-html-report
+          path: k6-report.html
+
+      - name: Deploy k6 HTML report to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: .
