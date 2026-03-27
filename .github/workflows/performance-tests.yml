@@ -62,23 +62,25 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Install k6-html-reporter locally
-        run: npm install k6-html-reporter
+      - name: Install k6-to-allure and Allure commandline
+        run: |
+          npm install -g k6-to-allure
+          npm install -g allure-commandline
 
-      - name: Debug - show files
-        run: ls -l node_modules/k6-html-reporter/
+      - name: Convert k6 JSON to Allure results
+        run: k6-to-allure k6-result.json --out allure-results
 
-      - name: Generate k6 HTML report
-        run: node node_modules/k6-html-reporter/cli.js --json k6-result.json --out k6-report.html
+      - name: Generate Allure report
+        run: allure generate allure-results --clean -o allure-report
 
-      - name: Upload k6 HTML report as artifact
+      - name: Upload Allure report as artifact
         uses: actions/upload-artifact@v4
         with:
-          name: k6-html-report
-          path: k6-report.html
+          name: k6-allure-report
+          path: allure-report
 
-      - name: Deploy k6 HTML report to GitHub Pages
+      - name: Deploy Allure report to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: .
+          publish_dir: allure-report
