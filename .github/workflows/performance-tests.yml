@@ -29,12 +29,15 @@ jobs:
             sleep 2
           done
 
-      - name: Install k6
+      - name: Install Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.21'
+
+      - name: Build k6 with Allure output
         run: |
-          curl -L -o k6.tar.gz https://github.com/grafana/k6/releases/download/v0.48.0/k6-v0.48.0-linux-amd64.tar.gz
-          tar -xzf k6.tar.gz
-          sudo mv k6-v0.48.0-linux-amd64/k6 /usr/local/bin/
-          k6 version
+          go install go.k6.io/xk6/cmd/xk6@latest
+          xk6 build v0.48.0 --output k6-allure --with github.com/szkiba/xk6-output-allure@latest
 
       - name: Wait for Vault to be ready
         run: |
@@ -54,23 +57,13 @@ jobs:
           "K6_USERNAME=$($CREDS.data.data.username)" | Out-File -FilePath $env:GITHUB_ENV -Append
           "K6_PASSWORD=$($CREDS.data.data.password)" | Out-File -FilePath $env:GITHUB_ENV -Append
 
-      - name: Run k6 performance tests and save result
-
-        run: k6 run --out json=k6-result.json ApiAndUiProject/Tests/Performance/users-api-crud.js
+      - name: Run k6 with Allure output
+        run: ./k6-allure run --out allure=allure-results ApiAndUiProject/Tests/Performance/users-api-crud.js
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-
-      - name: Clone k6-to-allure repo
-        run: git clone https://github.com/qa-minds/k6-to-allure.git
-
-      - name: Install dependencies for k6-to-allure
-        run: cd k6-to-allure && npm install
-
-      - name: Convert k6 JSON to Allure results
-        run: node k6-to-allure/src/index.js k6-result.json --out allure-results
 
       - name: Install Allure commandline
         run: npm install -g allure-commandline
