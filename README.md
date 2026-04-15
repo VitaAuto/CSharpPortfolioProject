@@ -1,9 +1,9 @@
-# PlaywrightProject
+#  CSharpPortfolioProject
 
 ## Overview
 
-This repository contains an automated testing project for a web application using **Playwright** (C#), BDD (Reqnroll/SpecFlow), NUnit, and the Page Object pattern.  
-The project currently implements UI tests, has a prepared structure for API tests, supports headless mode, CI/CD integration, and can be extended with reporting (e.g., Allure).
+This repository contains an automated testing project for a web application using **Playwright** (C#), BDD (Reqnroll/SpecFlow), NUnit, and the Page Object + Component Object patterns.  
+The project currently implements UI tests, has a prepared structure for API tests, supports parallel execution and headless mode, CI/CD integration, and reporting in Allure.
 
 ---
 
@@ -53,18 +53,22 @@ The project currently implements UI tests, has a prepared structure for API test
 2. **Run tests locally**  
    - UI tests:  
      ```
-     dotnet test
+     dotnet test --filter Category=UI
      ```
-   - API tests (after adding):  
+   - API tests:  
      ```
      dotnet test --filter Category=API
+     ```
+   - All smoke tests 
+     ```
+     dotnet test --filter "Category=smoke"
      ```
    - By default, tests run in headless mode.
 
 3. **Run in CI/CD**  
    - Smoke tests are triggered automatically via the `.yml` pipeline configuration.
 
-4. **(Optional) Enable Allure reporting**  
+4. **Enable Allure reporting**  
    - Add the `Allure.NUnit` or `Allure.Reqnroll` package.
    - After test execution, reports will be available in the `allure-results` folder.
 
@@ -76,22 +80,6 @@ The project currently implements UI tests, has a prepared structure for API test
   - Site search with result verification.
   - Page navigation checks.
   - UI element validation (color, visibility, cursor).
-- **API (to be added):**  
-  - CRUD operations: create, update, delete records via training APIs (e.g., Reqres.in, Swagger Petstore).
-  - Validation checks, negative scenarios, response mocking.
-
----
-
-## How to Add and Run API Tests
-
-1. In the **API/** folder, create subfolders:
-   - `Models/` — For request/response models.
-   - `Clients/` — For HTTP request classes (e.g., using RestSharp or HttpClient).
-   - `Steps/` — For API step definitions (e.g., CommonApiSteps.cs).
-   - `Tests/` — For standalone API tests (if not using only BDD).
-
-2. Write scenarios in separate feature files (e.g., `UserApi.feature`).
-
-3. Implement steps in `Steps/CommonApiSteps.cs` (or similar).
-
-4. To run only API tests, use category or tag filtering:
+- **API:**  
+  - CRUD operations: create, update, delete records.
+  - Validation checks, negative scenarios, response mocking

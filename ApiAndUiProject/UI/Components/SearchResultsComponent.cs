@@ -6,7 +6,7 @@ namespace ApiAndUiProject.UI.Components
 {
     public class SearchResultsComponent : BaseComponent
     {
-        public SearchResultsComponent(IPage page) : base(page, page.Locator("div.search-results__items")) { }
+        public SearchResultsComponent(IPage page) : base(page, page.Locator("div.search-results__items").First) { }
 
         public async Task WaitForResultsAsync()
         {
