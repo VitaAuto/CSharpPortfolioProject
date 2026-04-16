@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   vault:
     image: vault:1.13.3
@@ -8,9 +6,9 @@ services:
     cap_add:
       - IPC_LOCK
     environment:
-      VAULT_DEV_ROOT_TOKEN_ID: "root"
-      VAULT_DEV_LISTEN_ADDRESS: "0.0.0.0:8200"
-    command: server -dev -dev-root-token-id=root
+      VAULT_DEV_ROOT_TOKEN_ID: ${VAULT_DEV_ROOT_TOKEN_ID}
+      VAULT_DEV_LISTEN_ADDRESS: ${VAULT_DEV_LISTEN_ADDRESS}
+    command: server -dev -dev-root-token-id=${VAULT_DEV_ROOT_TOKEN_ID}
 
   vault-init:
     image: curlimages/curl:8.5.0
@@ -19,15 +17,15 @@ services:
     entrypoint: >
       sh -c "
         sleep 3 &&
-        curl --header 'X-Vault-Token: root' --request POST --data '{\"data\": {\"username\": \"admin\", \"password\": \"password123\", \"jwtsecret\": \"my_super_secret_key_that_is_32_chars!\"}}' http://vault:8200/v1/secret/data/myapp
+        curl --header 'X-Vault-Token: ${VAULT_TOKEN}' --request POST --data '{\"data\": {\"username\": \"${VAULT_INIT_USERNAME}\", \"password\": \"${VAULT_INIT_PASSWORD}\", \"jwtsecret\": \"${VAULT_INIT_JWTSECRET}\"}}' http://vault:8200/v1/secret/data/myapp
       "
 
   db:
     image: postgres:16
     environment:
-      POSTGRES_USER: myuser
-      POSTGRES_PASSWORD: mypass
-      POSTGRES_DB: mydb
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     ports:
       - "5454:5432"
     volumes:
@@ -40,10 +38,10 @@ services:
       dockerfile: Dockerfile
     environment:
       Vault__Uri: "http://vault:8200"
-      Vault__Token: "root"
-      ASPNETCORE_ENVIRONMENT: "Development"
-      ASPNETCORE_URLS: "http://+:5043"
-      ConnectionStrings__DefaultConnection: "Host=db;Port=5432;Database=mydb;Username=myuser;Password=mypass"
+      Vault__Token: ${VAULT_TOKEN}
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT}
+      ASPNETCORE_URLS: ${ASPNETCORE_URLS}
+      ConnectionStrings__DefaultConnection: "Host=db;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}"
     ports:
       - "5043:5043"
     depends_on:
@@ -65,7 +63,7 @@ services:
     ports:
       - "3000:3000"
     environment:
-      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_SECURITY_ADMIN_PASSWORD: ${GF_SECURITY_ADMIN_PASSWORD}
     depends_on:
       - influxdb
     volumes:
