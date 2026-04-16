@@ -6,6 +6,18 @@ on:
 jobs:
   api-tests:
     runs-on: ubuntu-latest
+    env:
+      VAULT_DEV_ROOT_TOKEN_ID: ${{ secrets.VAULT_DEV_ROOT_TOKEN_ID }}
+      VAULT_DEV_LISTEN_ADDRESS: ${{ secrets.VAULT_DEV_LISTEN_ADDRESS }}
+      VAULT_TOKEN: ${{ secrets.VAULT_TOKEN }}
+      VAULT_INIT_USERNAME: ${{ secrets.VAULT_INIT_USERNAME }}
+      VAULT_INIT_PASSWORD: ${{ secrets.VAULT_INIT_PASSWORD }}
+      VAULT_INIT_JWTSECRET: ${{ secrets.VAULT_INIT_JWTSECRET }}
+      POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+      POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+      POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+      ASPNETCORE_ENVIRONMENT: ${{ secrets.ASPNETCORE_ENVIRONMENT }}
+      ASPNETCORE_URLS: ${{ secrets.ASPNETCORE_URLS }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -49,10 +61,6 @@ jobs:
         run: rm -rf allure-results
 
       - name: Run API tests
-        env:
-          API_BASE_URL: ${{ secrets.API_BASE_URL }}
-          VAULT_URI: ${{ secrets.VAULT_URI }}
-          VAULT_TOKEN: ${{ secrets.VAULT_TOKEN }}
         run: dotnet test ApiAndUiProject/ApiAndUiProject.csproj --filter "Category=api" --no-build --configuration Release
       
       - name: Install Allure commandline
