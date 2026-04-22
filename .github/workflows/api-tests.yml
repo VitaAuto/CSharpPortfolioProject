@@ -7,6 +7,9 @@ jobs:
   api-tests:
     runs-on: ubuntu-latest
     env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
       API_BASE_URL: ${{ secrets.API_BASE_URL }}
       VAULT_URI: ${{ secrets.VAULT_URI }}
       VAULT_TOKEN: ${{ secrets.VAULT_TOKEN }}

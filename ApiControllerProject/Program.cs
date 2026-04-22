@@ -70,7 +70,7 @@ builder.Services.AddSingleton<IAmazonSQS>(sp =>
 {
     var config = builder.Configuration.GetSection("Sqs");
     var sqsConfig = new AmazonSQSConfig { ServiceURL = config["ServiceUrl"] };
-    return new AmazonSQSClient(config["AccessKey"], config["SecretKey"], sqsConfig);
+    return new AmazonSQSClient(sqsConfig);
 });
 
 builder.Services.AddSingleton<ISqsInitializerService, SqsInitializerService>();

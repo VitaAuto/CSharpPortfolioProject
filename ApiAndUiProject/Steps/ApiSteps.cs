@@ -182,7 +182,6 @@ namespace ApiAndUiProject.Steps
         public async Task ThenMessageWithCorrelationIdIsClearedInSqs()
         {
             var message = context.Get<Message>("SqsMessage") ?? throw new InvalidOperationException("No SQS message found in context!");
-            var correlationId = context.Get<string>("CorrelationId");
             var receiptHandle = message.ReceiptHandle;
 
             await sqsService.DeleteMessageAsync(ApiConfig.SqsQueueUrl, receiptHandle);
