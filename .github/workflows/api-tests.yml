@@ -39,7 +39,7 @@ jobs:
 
       - name: Wait for API to be ready
         run: |
-          for i in {1..60}; do
+          for i in {1..30}; do
             if curl http://localhost:5043/swagger/index.html > /dev/null 2>&1; then
               echo "API is up!"
               break
@@ -47,6 +47,10 @@ jobs:
             echo "Waiting for API to start..."
             sleep 3
           done
+      
+      - name: Show API container logs
+        if: always()
+        run: docker compose logs api
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
