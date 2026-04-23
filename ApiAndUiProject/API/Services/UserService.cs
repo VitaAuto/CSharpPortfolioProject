@@ -4,24 +4,18 @@ using Newtonsoft.Json;
 
 namespace ApiAndUiProject.API.Services
 {
-    public class UserService
+    public class UserService(UsersApiClient usersApiClient)
     {
-        private readonly UsersApiClient _usersApiClient;
-
-        public UserService(UsersApiClient usersApiClient)
-        {
-            _usersApiClient = usersApiClient;
-        }
-
         public void EnsureUserEmailIsUnique(string email)
         {
-            var response = _usersApiClient.GetAllUsers();
-            var users = JsonConvert.DeserializeObject<List<User>>(response.Content) ?? new List<User>();
+            var response = usersApiClient.GetAllUsers();
+            var content = response.Content ?? string.Empty;
+            var users = JsonConvert.DeserializeObject<List<User>>(content) ?? [];
             var usersWithSameEmail = users.Where(u => u.Email == email).ToList();
 
             foreach (var user in usersWithSameEmail)
             {
-                _usersApiClient.DeleteUser(user.Id);
+                usersApiClient.DeleteUser(user.Id);
             }
         }
     }

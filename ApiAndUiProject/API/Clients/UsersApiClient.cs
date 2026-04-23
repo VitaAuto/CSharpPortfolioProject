@@ -1,5 +1,4 @@
-﻿using Newtonsoft.Json;
-using ApiAndUiProject.API.Auth;
+﻿using ApiAndUiProject.API.Auth;
 using ApiAndUiProject.API.Models;
 using ApiAndUiProject.Config;
 using RestSharp;
@@ -29,7 +28,7 @@ namespace ApiAndUiProject.API.Clients
 
         public RestResponse GetUser(int id)
         {
-            var request = new RestRequest(ApiConfig.UserById.Replace("{id}", id.ToString()), Method.Get);
+            var request = new RestRequest(ApiConfig.UserByIdTemplate(id), Method.Get);
             AddAuthHeader(request);
             return _client.Execute(request);
         }
@@ -43,7 +42,7 @@ namespace ApiAndUiProject.API.Clients
 
         public RestResponse UpdateUser(int id, User user)
         {
-            var request = new RestRequest(ApiConfig.UserById.Replace("{id}", id.ToString()), Method.Put);
+            var request = new RestRequest(ApiConfig.UserByIdTemplate(id), Method.Put);
             AddAuthHeader(request);
             request.AddJsonBody(user);
             return _client.Execute(request);
@@ -51,7 +50,7 @@ namespace ApiAndUiProject.API.Clients
 
         public RestResponse PatchUser(int id, object patchDto)
         {
-            var request = new RestRequest(ApiConfig.UserById.Replace("{id}", id.ToString()), Method.Patch);
+            var request = new RestRequest(ApiConfig.UserByIdTemplate(id), Method.Patch);
             AddAuthHeader(request);
             request.AddJsonBody(patchDto);
             return _client.Execute(request);
@@ -59,7 +58,7 @@ namespace ApiAndUiProject.API.Clients
 
         public RestResponse DeleteUser(int id)
         {
-            var request = new RestRequest(ApiConfig.UserById.Replace("{id}", id.ToString()), Method.Delete);
+            var request = new RestRequest(ApiConfig.UserByIdTemplate(id), Method.Delete);
             AddAuthHeader(request);
             return _client.Execute(request);
         }

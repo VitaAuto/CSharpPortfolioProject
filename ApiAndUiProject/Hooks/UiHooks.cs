@@ -32,10 +32,17 @@ namespace ApiAndUiProject.Hooks
             var browserContext = scenarioContext.Get<IBrowserContext>();
             await browserContext.CloseAsync();
 
-            scenarioContext.Remove(typeof(IBrowserContext).FullName);
-            scenarioContext.Remove(typeof(IPage).FullName);
-            if (scenarioContext.ContainsKey(typeof(BasePage).FullName))
-                scenarioContext.Remove(typeof(BasePage).FullName);
+            var browserContextKey = typeof(IBrowserContext).FullName;
+            if (browserContextKey != null)
+                scenarioContext.Remove(browserContextKey);
+
+            var pageKey = typeof(IPage).FullName;
+            if (pageKey != null)
+                scenarioContext.Remove(pageKey);
+
+            var basePageKey = typeof(BasePage).FullName;
+            if (basePageKey != null && scenarioContext.ContainsKey(basePageKey))
+                scenarioContext.Remove(basePageKey);
         }
     }
 }

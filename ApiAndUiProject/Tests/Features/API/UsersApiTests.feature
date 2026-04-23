@@ -91,5 +91,5 @@ Feature: Users API tests
 
   Scenario: Delete user by non-existing id
     Given user is logged in
-    When I send a DELETE request to delete the user by id 99999
+    When I send DELETE request to delete user by id 99999
     Then response status should be 404

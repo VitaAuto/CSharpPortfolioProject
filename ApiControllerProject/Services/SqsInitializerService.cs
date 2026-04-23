@@ -5,15 +5,8 @@ using System.Threading.Tasks;
 
 namespace ApiControllerProject.Services
 {
-    public class SqsInitializerService : ISqsInitializerService
+    public class SqsInitializerService(IAmazonSQS sqsClient) : ISqsInitializerService
     {
-        private readonly IAmazonSQS _sqsClient;
-
-        public SqsInitializerService(IAmazonSQS sqsClient)
-        {
-            _sqsClient = sqsClient;
-        }
-
         public async Task<string> EnsureQueueExistsAsync(string queueName)
         {
             const int maxAttempts = 10;
@@ -22,17 +15,18 @@ namespace ApiControllerProject.Services
             {
                 try
                 {
-                    var listResponse = await _sqsClient.ListQueuesAsync(new ListQueuesRequest { QueueNamePrefix = queueName });
+                    var listResponse = await sqsClient.ListQueuesAsync(new ListQueuesRequest { QueueNamePrefix = queueName });
                     var queueUrl = listResponse.QueueUrls?.FirstOrDefault(url => url.EndsWith($"/{queueName}"));
                     if (queueUrl == null)
                     {
-                        var createResponse = await _sqsClient.CreateQueueAsync(new CreateQueueRequest { QueueName = queueName });
+                        var createResponse = await sqsClient.CreateQueueAsync(new CreateQueueRequest { QueueName = queueName });
                         queueUrl = createResponse.QueueUrl;
                     }
                     return queueUrl;
                 }
                 catch (Exception ex)
                 {
+                    Console.WriteLine($"Attempt {attempt} failed to connect to SQS: {ex.Message}");
                     if (attempt == maxAttempts)
                         throw;
                     await Task.Delay(delayMs);

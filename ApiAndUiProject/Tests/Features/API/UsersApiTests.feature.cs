@@ -494,7 +494,7 @@ namespace ApiAndUiProject.Tests.Features.API
     await testRunner.GivenAsync("user is logged in", ((string)(null)), ((global::Reqnroll.Table)(null)), "Given ");
 #line hidden
 #line 94
-    await testRunner.WhenAsync("I send a DELETE request to delete the user by id 99999", ((string)(null)), ((global::Reqnroll.Table)(null)), "When ");
+    await testRunner.WhenAsync("I send DELETE request to delete user by id 99999", ((string)(null)), ((global::Reqnroll.Table)(null)), "When ");
 #line hidden
 #line 95
     await testRunner.ThenAsync("response status should be 404", ((string)(null)), ((global::Reqnroll.Table)(null)), "Then ");

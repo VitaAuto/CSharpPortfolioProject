@@ -10,19 +10,20 @@ using Newtonsoft.Json;
 using Reqnroll;
 using RestSharp;
 using System.Net;
+using Serilog;
 
 namespace ApiAndUiProject.Steps
 {
     [Binding]
-    public class UsersApiSteps(ApiContext context, UserService userService, UsersApiClient usersApiClient, ITokenProvider tokenProvider, SqsService sqsService)
+    public class UsersApiSteps(ApiContext context, UserService userService, UsersApiClient usersApiClient, ITokenProvider tokenProvider, SqsService sqsService, ILogger logger)
     {
 
         [Given(@"user is logged in")]
-        public async Task GivenTheUserIsLoggedIn()
+        public async Task GivenUserIsLoggedIn()
         {
+            logger.Information("Logging in user"); 
             var vaultApiClient = new VaultApiClient(ApiConfig.VaultUri, ApiConfig.VaultToken);
             var (username, password) = await vaultApiClient.GetCredentialsAsync();
-
             var authApiClient = new AuthApiClient(ApiConfig.ApiBaseUrl);
             var token = authApiClient.GetToken(username, password);
 
@@ -33,6 +34,7 @@ namespace ApiAndUiProject.Steps
         [Then(@"user email ""(.*)"" is unique")]
         public async Task UserEmailIsUnique(string email)
         {
+            logger.Information("Ensuring email is unique: {Email}", email); 
             userService.EnsureUserEmailIsUnique(email);
             await sqsService.DeleteMessagesByEmailAsync(ApiConfig.SqsQueueUrl, email);
         }
@@ -47,6 +49,7 @@ namespace ApiAndUiProject.Steps
                 Email = email,
                 IsActive = isActive
             });
+            logger.Information("User data preparation: {firstName}, {lastName}, {email}, {isActive}", firstName, lastName, email, isActive);
         }
 
         [Given(@"I have another user with first name ""(.*)"", last name ""(.*)"", email ""(.*)"", is active (.*)")]
@@ -59,13 +62,17 @@ namespace ApiAndUiProject.Steps
                 Email = email,
                 IsActive = isActive
             });
+            logger.Information("User data preparation: {AnotherUser}", context.Get<User>("AnotherUser"));
         }
 
         [When(@"I send POST request to create user")]
-        public void WhenISendPOSTRequestToCreateUser()
+        public void WhenISendPostRequestToCreateUser()
         {
+            logger.Information("Creating user"); 
             var correlationId = Guid.NewGuid().ToString();
             context.Set("CorrelationId", correlationId);
+
+            logger.Information("Creating user with CorrelationId: {CorrelationId}", correlationId);
 
             var response = usersApiClient.CreateUser(context.Get<User>("User"), correlationId);
             context.Set("Response", response);
@@ -81,12 +88,12 @@ namespace ApiAndUiProject.Steps
             }
             else
             {
-                Console.WriteLine($"User creation failed: {response.StatusCode} {response.Content}");
+                logger.Error("User creation failed: {StatusCode} {Content}", response.StatusCode, response.Content);
             }
         }
 
         [When(@"I send POST request to create another user")]
-        public void WhenISendPOSTRequestToCreateAnoherUser()
+        public void WhenISendPostRequestToCreateAnoherUser()
         {
             var correlationId = Guid.NewGuid().ToString();
             context.Set("CorrelationId", correlationId);
@@ -105,13 +112,14 @@ namespace ApiAndUiProject.Steps
             }
             else
             {
-                Console.WriteLine($"Another user creation failed: {response.StatusCode} {response.Content}");
+                logger.Error("Another user creation failed: {StatusCode} {Content}", response.StatusCode, response.Content);
             }
         }
 
         [When(@"I send PUT request to update user with first name ""(.*)"", last name ""(.*)"", email ""(.*)"", is active (.*)")]
         public void WhenISendPutRequestToUpdateUserWithData(string firstName, string lastName, string email, bool isActive)
         {
+            logger.Information("Updating user"); 
             var updatedUser = new User
             {
                 Id = context.Get<int>("UserId"),
@@ -126,6 +134,7 @@ namespace ApiAndUiProject.Steps
         [When(@"I send PATCH request to update user with email ""(.*)""")]
         public void WhenISendPatchRequestToUpdateUserWithEmail(string email)
         {
+            logger.Information("Patching user email to: {Email}", email); 
             var patchDto = new { Email = email };
             context.Set("Response", usersApiClient.PatchUser(context.Get<int>("UserId"), patchDto));
         }
@@ -133,19 +142,22 @@ namespace ApiAndUiProject.Steps
         [When(@"I send DELETE request to delete user")]
         public void WhenISendDeleteRequestToDeleteUser()
         {
+            logger.Information("Deleting user"); 
             var userId = context.Get<int>("UserId");
             context.Set("Response", usersApiClient.DeleteUser(userId));
         }
 
-        [When(@"I send a DELETE request to delete the user by id (\d+)")]
+        [When(@"I send DELETE request to delete user by id (\d+)")]
         public void WhenISendDeleteRequestToDeleteUserById(int id)
         {
+            logger.Information("Deleting user by id: {UserId}", id); 
             context.Set("Response", usersApiClient.DeleteUser(id));
         }
 
         [When(@"I send GET request to get user by id")]
         public void WhenISendGetRequestToGetUserById()
         {
+            logger.Information("Getting user by id"); 
             var userId = context.Get<int>("UserId");
             context.Set("Response", usersApiClient.GetUser(userId));
         }
@@ -153,43 +165,51 @@ namespace ApiAndUiProject.Steps
         [When(@"I send GET request to get user by id (\d+)")]
         public void WhenISendGetRequestToGetUserById(int id)
         {
+            logger.Information("Getting user by id: {UserId}", id); 
             context.Set("Response", usersApiClient.GetUser(id));
         }
 
         [Then(@"response status should be (.*)")]
         public void ThenResponseStatusShouldBe(int statusCode)
         {
+            logger.Information("Checking response status: {StatusCode}", statusCode); 
             ((int)context.Get<RestResponse>("Response").StatusCode).Should().Be(statusCode);
         }
 
         [Then(@"response should contain ""(.*)""")]
         public void ThenResponseShouldContain(string expectedText)
         {
+            logger.Information("Checking response contains: {ExpectedText}", expectedText); 
             context.Get<RestResponse>("Response").Content.Should().Contain(expectedText);
         }
 
         [Then(@"message with CorrelationId should be present in SQS")]
         public async Task ThenMessageWithCorrelationIdShouldBePresentInSqs()
         {
+            logger.Information("Checking SQS for message with CorrelationId"); 
             var correlationId = context.Get<string>("CorrelationId");
             var message = await sqsService.GetMessageByCorrelationIdAsync(ApiConfig.SqsQueueUrl, correlationId);
 
             message.Should().NotBeNull($"Message with CorrelationId {correlationId} should be present in SQS");
             context.Set("SqsMessage", message);
+            logger.Information("Message with CorrelationId {CorrelationId} has been retrieved from SQS", correlationId);
         }
 
         [Then(@"message with CorrelationId is cleared in SQS")]
         public async Task ThenMessageWithCorrelationIdIsClearedInSqs()
         {
+            logger.Information("Clearing SQS message with CorrelationId"); 
             var message = context.Get<Message>("SqsMessage") ?? throw new InvalidOperationException("No SQS message found in context!");
             var receiptHandle = message.ReceiptHandle;
 
             await sqsService.DeleteMessageAsync(ApiConfig.SqsQueueUrl, receiptHandle);
+            logger.Information("Message with CorrelationId {CorrelationId} has been deleted from SQS", context.Get<string>("CorrelationId"));
         }
 
         [Then(@"SQS message body should match user with first name ""(.*)"", last name ""(.*)"", email ""(.*)"", is active (.*)")]
         public void ThenSqsMessageBodyShouldMatchUserData(string firstName, string lastName, string email, bool isActive)
         {
+            logger.Information("Checking SQS message body matches expected user"); 
             var expectedUser = new User
             {
                 FirstName = firstName,

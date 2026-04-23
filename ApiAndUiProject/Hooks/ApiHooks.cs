@@ -2,35 +2,34 @@
 using ApiAndUiProject.API.Clients;
 using ApiAndUiProject.API.Context;
 using Reqnroll;
+using Serilog;
 
 namespace ApiAndUiProject.Hooks
 {
     [Binding]
-    public class ApiHooks(ApiContext context, UsersApiClient usersApiClient)
+    public class ApiHooks(ApiContext context, UsersApiClient usersApiClient, ILogger logger)
     {
-        private readonly ApiContext _context = context;
-        private readonly UsersApiClient _usersApiClient = usersApiClient;
 
         [AfterScenario]
         public void CleanupCreatedUsers()
         {
-            var createdUserIds = _context.Get<List<int>>("CreatedUserIds") ?? new List<int>();
+            var createdUserIds = context.Get<List<int>>("CreatedUserIds") ?? new List<int>();
 
             foreach (var id in createdUserIds.Distinct())
             {
                 try
                 {
-                    var resp = _usersApiClient.DeleteUser(id);
-                    Console.WriteLine($"Deleted user with id: {id}, status: {resp.StatusCode}");
+                    var resp = usersApiClient.DeleteUser(id);
+                    logger.Information("Deleted user with id: {UserId}, status: {StatusCode}", id, resp.StatusCode);
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"Failed to delete user with id: {id}. Error: {ex.Message}");
+                    logger.Error(ex, $"Failed to delete user with id: {id}");
                 }
             }
 
             createdUserIds.Clear();
-            _context.Set("CreatedUserIds", createdUserIds);
+            context.Set("CreatedUserIds", createdUserIds);
         }
     }
 }

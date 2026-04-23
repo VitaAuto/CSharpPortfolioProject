@@ -10,43 +10,33 @@ using System.Threading.Tasks;
 namespace ApiAndUiProject.Steps
 {
     [Binding]
-    public class UiSteps
-    {
-        private readonly PageContext _context;
-        private readonly IPageFactory _pageFactory;
-        private readonly IElementFinder _elementFinder;
-
-        public UiSteps(PageContext context, IPageFactory pageFactory, IElementFinder elementFinder)
+    public class UiSteps(PageContext context, IPageFactory pageFactory, IElementFinder elementFinder)
         {
-            _context = context;
-            _pageFactory = pageFactory;
-            _elementFinder = elementFinder;
-        }
 
         [Given(@"user opens '(.*)' page")]
         public async Task UserOpensPage(string pageName)
         {
-            _context.CurrentPage = _pageFactory.CreatePageByName(pageName);
-            await _context.CurrentPage.OpenAsync();
-            await _context.CurrentPage.WaitForLoadAsync();
+            context.CurrentPage = pageFactory.CreatePageByName(pageName);
+            await context.CurrentPage.OpenAsync();
+            await context.CurrentPage.WaitForLoadAsync();
         }
 
         [Then(@"user should be navigated to '(.*)' page")]
         public async Task UserShouldBeNavigatedToPage(string pageName)
         {
-            var expectedUrl = _pageFactory.CreatePageByName(pageName).Url;
-            var actualUrl = _context.CurrentPage.GetCurrentUrl();
-            await _context.CurrentPage.WaitForLoadAsync();
+            var expectedUrl = pageFactory.CreatePageByName(pageName).Url;
+            var actualUrl = context.CurrentPage.GetCurrentUrl();
+            await context.CurrentPage.WaitForLoadAsync();
 
             actualUrl.Should().StartWith(expectedUrl, $"Should be navigated to {pageName}");
 
-            _context.CurrentPage = _pageFactory.CreatePageByName(pageName);
+            context.CurrentPage = pageFactory.CreatePageByName(pageName);
         }
 
         [When(@"user clicks ""(.*)""")]
         public async Task WhenUserClicksElement(string elementName)
         {
-            var element = _elementFinder.FindElementByName(_context.CurrentPage, elementName);
+            var element = elementFinder.FindElementByName(context.CurrentPage, elementName);
             element.Should().NotBeNull($"Element '{elementName}' should be present");
 
             await element.WaitForVisibleAsync(5000);
@@ -57,7 +47,7 @@ namespace ApiAndUiProject.Steps
         [Then(@"""(.*)"" contains (.*) options")]
         public async Task ElementContainsOptions(string elementName, int optionsCount)
         {
-            var element = _elementFinder.FindElementByName(_context.CurrentPage, elementName);
+            var element = elementFinder.FindElementByName(context.CurrentPage, elementName);
             element.Should().NotBeNull($"Element '{elementName}' should be present");
 
             var actualCount = await element.GetOptionsCountAsync();
@@ -67,7 +57,7 @@ namespace ApiAndUiProject.Steps
         [Then(@"""(.*)"" should be present")]
         public async Task ThenElementShouldBePresent(string elementName)
         {
-            var element = _elementFinder.FindElementByName(_context.CurrentPage, elementName);
+            var element = elementFinder.FindElementByName(context.CurrentPage, elementName);
             element.Should().NotBeNull($"Element '{elementName}' should be present");
 
             await element.WaitForVisibleAsync(5000);
@@ -80,7 +70,7 @@ namespace ApiAndUiProject.Steps
             foreach (var row in table.Rows)
             {
                 var elementName = row[0];
-                var element = _elementFinder.FindElementByName(_context.CurrentPage, elementName);
+                var element = elementFinder.FindElementByName(context.CurrentPage, elementName);
                 element.Should().NotBeNull($"Option '{elementName}' should be present");
                 (await element.IsVisibleAsync()).Should().BeTrue($"Option '{elementName}' should be present");
             }
@@ -89,7 +79,7 @@ namespace ApiAndUiProject.Steps
         [When(@"user enters '(.*)' text in ""(.*)""")]
         public async Task UserEntersTextInElement(string text, string elementName)
         {
-            var element = _elementFinder.FindElementByName(_context.CurrentPage, elementName);
+            var element = elementFinder.FindElementByName(context.CurrentPage, elementName);
             if (element is BaseTextField textField)
                 await textField.FillAsync(text);
             else
@@ -100,7 +90,7 @@ namespace ApiAndUiProject.Steps
         public async Task SearchResultsInElementShouldBePresent(string should, string elementName)
         {
             var shouldBePresent = should == "should";
-            var element = _elementFinder.FindElementByName(_context.CurrentPage, elementName);
+            var element = elementFinder.FindElementByName(context.CurrentPage, elementName);
             element.Should().NotBeNull("Search results component should be present after searching");
 
             if (element is SearchResultsComponent resultsComponent)
@@ -122,7 +112,7 @@ namespace ApiAndUiProject.Steps
         [When(@"user hovers over ""(.*)""")]
         public async Task WhenUserHoversOverElement(string elementName)
         {
-            var element = _elementFinder.FindElementByName(_context.CurrentPage, elementName);
+            var element = elementFinder.FindElementByName(context.CurrentPage, elementName);
             element.Should().NotBeNull($"Element '{elementName}' should be present");
             await element.HoverAsync();
         }
@@ -132,7 +122,7 @@ namespace ApiAndUiProject.Steps
         {
             var shouldAppear = should == "should";
 
-            var element = _elementFinder.FindElementByName(_context.CurrentPage, elementName);
+            var element = elementFinder.FindElementByName(context.CurrentPage, elementName);
             element.Should().NotBeNull($"Element '{elementName}' should be present");
             await element.HoverAsync();
             var pointer = await element.GetCursorAsync();
@@ -146,7 +136,7 @@ namespace ApiAndUiProject.Steps
         [Then(@"""(.*)"" should be hidden")]
         public async Task ElementShouldBeHidden(string elementName)
         {
-            var element = _elementFinder.FindElementByName(_context.CurrentPage, elementName);
+            var element = elementFinder.FindElementByName(context.CurrentPage, elementName);
             element.Should().NotBeNull($"Element '{elementName}' should not be visible"); 
             await element.WaitForHiddenAsync();
             (await element.IsVisibleAsync()).Should().BeFalse($"Element '{elementName}' should not be visible");

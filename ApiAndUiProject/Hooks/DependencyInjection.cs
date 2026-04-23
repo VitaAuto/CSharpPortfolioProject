@@ -1,16 +1,13 @@
 ﻿using Amazon.SQS;
 using ApiAndUiProject.API.Auth;
 using ApiAndUiProject.API.Clients;
-using ApiAndUiProject.API.Context;
 using ApiAndUiProject.API.Services;
 using ApiAndUiProject.Config;
-using ApiAndUiProject.Steps;
-using ApiAndUiProject.UI;
 using ApiAndUiProject.UI.Helpers;
-using Microsoft.Extensions.Logging;
 using Microsoft.Playwright;
 using Reqnroll;
 using Reqnroll.BoDi;
+using Serilog;
 
 namespace ApiAndUiProject.Hooks
 {
@@ -44,10 +41,17 @@ namespace ApiAndUiProject.Hooks
             
             container.RegisterInstanceAs<IAmazonSQS>(sqsClient);
 
+            var logger = new LoggerConfiguration()
+            .WriteTo.Console()
+            .MinimumLevel.Debug()
+            .CreateLogger();
+
+            container.RegisterInstanceAs<Serilog.ILogger>(logger);
+
             container.RegisterTypeAs<TokenProvider, ITokenProvider>();
             container.RegisterTypeAs<UserService, UserService>();
             container.RegisterTypeAs<SqsService, SqsService>();
-            container.RegisterFactoryAs<UsersApiClient>(c => new UsersApiClient(ApiConfig.ApiBaseUrl, c.Resolve<ITokenProvider>()));
+            container.RegisterFactoryAs<UsersApiClient>(c =>new UsersApiClient(ApiConfig.ApiBaseUrl, c.Resolve<ITokenProvider>()));
         }
     }
 }

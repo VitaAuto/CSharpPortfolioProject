@@ -19,5 +19,6 @@ namespace ApiAndUiProject.Config
         public const string Users = "/api/users";
 
         public const string UserById = "/api/users/{id}";
+        public static string UserByIdTemplate(int id) => $"/api/users/{id}";
     }
 }
