@@ -7,7 +7,7 @@ namespace ApiAndUiProject.API.Services
 {
     public class SqsService(IAmazonSQS sqsClient)
     {
-        public async Task<Message?> GetMessageByCorrelationIdAsync(string queueUrl, string correlationId, int maxAttempts = 10, int delayMs = 500)
+        public async Task<Message?> GetMessageByCorrelationIdAsync(string queueUrl, string correlationId, int maxAttempts = 10, int delayMs = 2000)
         {
             for (int attempt = 1; attempt <= maxAttempts; attempt++)
             {

@@ -48,10 +48,11 @@ namespace ApiAndUiProject.Hooks
 
             container.RegisterInstanceAs<Serilog.ILogger>(logger);
 
+            container.RegisterFactoryAs<VaultApiClient>(c => new VaultApiClient(ApiConfig.VaultUri, ApiConfig.VaultToken));
+            container.RegisterFactoryAs<AuthApiClient>(c => new AuthApiClient(ApiConfig.ApiBaseUrl));
             container.RegisterTypeAs<TokenProvider, ITokenProvider>();
             container.RegisterTypeAs<UserService, UserService>();
             container.RegisterTypeAs<SqsService, SqsService>();
-            container.RegisterFactoryAs<UsersApiClient>(c =>new UsersApiClient(ApiConfig.ApiBaseUrl, c.Resolve<ITokenProvider>()));
         }
     }
 }

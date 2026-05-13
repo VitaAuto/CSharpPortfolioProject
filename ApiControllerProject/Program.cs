@@ -73,6 +73,12 @@ builder.Services.AddSingleton<IAmazonSQS>(sp =>
     return new AmazonSQSClient(sqsConfig);
 });
 
+var queueName = builder.Configuration.GetSection("Sqs")["QueueName"];
+if (string.IsNullOrWhiteSpace(queueName))
+    throw new Exception("Sqs.QueueName is not set in appsettings.json");
+builder.Services.AddSingleton<string>(queueName);
+
+builder.Services.AddSingleton<IMessageSender, SqsMessageSender>();
 builder.Services.AddSingleton<ISqsInitializerService, SqsInitializerService>();
 
 var app = builder.Build();
@@ -80,14 +86,7 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var sqsInitializer = scope.ServiceProvider.GetRequiredService<ISqsInitializerService>();
-    sqsInitializer.EnsureQueueExistsAsync("my-queue").GetAwaiter().GetResult();
-}
-
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-
-    app.UseSwaggerUI();
+    sqsInitializer.EnsureQueueExistsAsync(queueName).GetAwaiter().GetResult();
 }
 
 app.UseHttpsRedirection();
@@ -95,6 +94,13 @@ app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapControllers();
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
+
+app.MapControllers
+();
 
 app.Run();

@@ -107,7 +107,7 @@ namespace ApiAndUiProject.Tests.Features.API
         
         private static global::Reqnroll.Formatters.RuntimeSupport.FeatureLevelCucumberMessages InitializeCucumberMessages()
         {
-            return new global::Reqnroll.Formatters.RuntimeSupport.FeatureLevelCucumberMessages("Tests/Features/API/UsersApiWithSqsTests.feature.ndjson", 3);
+            return new global::Reqnroll.Formatters.RuntimeSupport.FeatureLevelCucumberMessages("Tests/Features/API/UsersApiWithSqsTests.feature.ndjson", 4);
         }
         
         [global::NUnit.Framework.TestAttribute()]
@@ -147,25 +147,108 @@ this.ScenarioInitialize(scenarioInfo, ruleInfo);
     await testRunner.GivenAsync("user is logged in", ((string)(null)), ((global::Reqnroll.Table)(null)), "Given ");
 #line hidden
 #line 7
-    await testRunner.AndAsync(string.Format("I have user with first name \"{0}\", last name \"{1}\", email \"{2}\", is active {3}", firstName, lastName, email, isActive), ((string)(null)), ((global::Reqnroll.Table)(null)), "And ");
+    await testRunner.AndAsync("I have separate SQS queue", ((string)(null)), ((global::Reqnroll.Table)(null)), "And ");
 #line hidden
 #line 8
-    await testRunner.AndAsync(string.Format("user email \"{0}\" is unique", email), ((string)(null)), ((global::Reqnroll.Table)(null)), "And ");
+    await testRunner.AndAsync(string.Format("I have user with first name \"{0}\", last name \"{1}\", email \"{2}\", is active {3}", firstName, lastName, email, isActive), ((string)(null)), ((global::Reqnroll.Table)(null)), "And ");
 #line hidden
 #line 9
-    await testRunner.WhenAsync("I send POST request to create user", ((string)(null)), ((global::Reqnroll.Table)(null)), "When ");
+    await testRunner.AndAsync(string.Format("user email \"{0}\" is unique", email), ((string)(null)), ((global::Reqnroll.Table)(null)), "And ");
 #line hidden
 #line 10
-    await testRunner.ThenAsync(string.Format("response status should be {0}", status), ((string)(null)), ((global::Reqnroll.Table)(null)), "Then ");
+    await testRunner.WhenAsync("I send POST request to create user", ((string)(null)), ((global::Reqnroll.Table)(null)), "When ");
 #line hidden
 #line 11
-    await testRunner.AndAsync("message with CorrelationId should be present in SQS", ((string)(null)), ((global::Reqnroll.Table)(null)), "And ");
+    await testRunner.ThenAsync(string.Format("response status should be {0}", status), ((string)(null)), ((global::Reqnroll.Table)(null)), "Then ");
 #line hidden
 #line 12
+    await testRunner.AndAsync("message with CorrelationId should be present in SQS", ((string)(null)), ((global::Reqnroll.Table)(null)), "And ");
+#line hidden
+#line 13
     await testRunner.AndAsync(string.Format("SQS message body should match user with first name \"{0}\", last name \"{1}\", email " +
                             "\"{2}\", is active {3}", firstName, lastName, email, isActive), ((string)(null)), ((global::Reqnroll.Table)(null)), "And ");
 #line hidden
-#line 13
+#line 14
+    await testRunner.AndAsync("message with CorrelationId is cleared in SQS", ((string)(null)), ((global::Reqnroll.Table)(null)), "And ");
+#line hidden
+            }
+            await this.ScenarioCleanupAsync();
+        }
+        
+        [global::NUnit.Framework.TestAttribute()]
+        [global::NUnit.Framework.DescriptionAttribute("Update user with CorrelationId in SQS")]
+        [global::NUnit.Framework.CategoryAttribute("smoke")]
+        [global::NUnit.Framework.TestCaseAttribute("Linda", "Was", "lindawas@mail.com", "true", "Maria", "Is", "mariais@mail.com", "true", "200", "Maria", "1", null)]
+        public async global::System.Threading.Tasks.Task UpdateUserWithCorrelationIdInSQS(string firstName, string lastName, string email, string isActive, string newFirstName, string newLastName, string newEmail, string newIsActive, string status, string expectedText, string @__pickleIndex, string[] exampleTags)
+        {
+            string[] @__tags = new string[] {
+                    "smoke"};
+            if ((exampleTags != null))
+            {
+                @__tags = System.Linq.Enumerable.ToArray(System.Linq.Enumerable.Concat(@__tags, exampleTags));
+            }
+            string[] tagsOfScenario = @__tags;
+            global::System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new global::System.Collections.Specialized.OrderedDictionary();
+            argumentsOfScenario.Add("FirstName", firstName);
+            argumentsOfScenario.Add("LastName", lastName);
+            argumentsOfScenario.Add("Email", email);
+            argumentsOfScenario.Add("IsActive", isActive);
+            argumentsOfScenario.Add("NewFirstName", newFirstName);
+            argumentsOfScenario.Add("NewLastName", newLastName);
+            argumentsOfScenario.Add("NewEmail", newEmail);
+            argumentsOfScenario.Add("NewIsActive", newIsActive);
+            argumentsOfScenario.Add("Status", status);
+            argumentsOfScenario.Add("ExpectedText", expectedText);
+            string pickleIndex = @__pickleIndex;
+            global::Reqnroll.ScenarioInfo scenarioInfo = new global::Reqnroll.ScenarioInfo("Update user with CorrelationId in SQS", null, tagsOfScenario, argumentsOfScenario, featureTags, pickleIndex);
+            string[] tagsOfRule = ((string[])(null));
+            global::Reqnroll.RuleInfo ruleInfo = null;
+#line 22
+ this.ScenarioInitialize(scenarioInfo, ruleInfo);
+#line hidden
+            if ((global::Reqnroll.TagHelper.ContainsIgnoreTag(scenarioInfo.CombinedTags) || global::Reqnroll.TagHelper.ContainsIgnoreTag(featureTags)))
+            {
+                await testRunner.SkipScenarioAsync();
+            }
+            else
+            {
+                await this.ScenarioStartAsync();
+#line 23
+    await testRunner.GivenAsync("user is logged in", ((string)(null)), ((global::Reqnroll.Table)(null)), "Given ");
+#line hidden
+#line 24
+    await testRunner.AndAsync("I have separate SQS queue", ((string)(null)), ((global::Reqnroll.Table)(null)), "And ");
+#line hidden
+#line 25
+    await testRunner.AndAsync(string.Format("I have user with first name \"{0}\", last name \"{1}\", email \"{2}\", is active {3}", firstName, lastName, email, isActive), ((string)(null)), ((global::Reqnroll.Table)(null)), "And ");
+#line hidden
+#line 26
+    await testRunner.AndAsync(string.Format("user email \"{0}\" is unique", email), ((string)(null)), ((global::Reqnroll.Table)(null)), "And ");
+#line hidden
+#line 27
+    await testRunner.WhenAsync("I send POST request to create user", ((string)(null)), ((global::Reqnroll.Table)(null)), "When ");
+#line hidden
+#line 28
+    await testRunner.ThenAsync(string.Format("user email \"{0}\" is unique", newEmail), ((string)(null)), ((global::Reqnroll.Table)(null)), "Then ");
+#line hidden
+#line 29
+    await testRunner.WhenAsync(string.Format("I send PUT request to update user with first name \"{0}\", last name \"{1}\", email \"" +
+                            "{2}\", is active {3}", newFirstName, newLastName, newEmail, newIsActive), ((string)(null)), ((global::Reqnroll.Table)(null)), "When ");
+#line hidden
+#line 30
+    await testRunner.ThenAsync(string.Format("response status should be {0}", status), ((string)(null)), ((global::Reqnroll.Table)(null)), "Then ");
+#line hidden
+#line 31
+    await testRunner.AndAsync(string.Format("response should contain \"{0}\"", expectedText), ((string)(null)), ((global::Reqnroll.Table)(null)), "And ");
+#line hidden
+#line 32
+    await testRunner.AndAsync("message with CorrelationId should be present in SQS", ((string)(null)), ((global::Reqnroll.Table)(null)), "And ");
+#line hidden
+#line 33
+    await testRunner.AndAsync(string.Format("SQS message body should match user with first name \"{0}\", last name \"{1}\", email " +
+                            "\"{2}\", is active {3}", newFirstName, newLastName, newEmail, newIsActive), ((string)(null)), ((global::Reqnroll.Table)(null)), "And ");
+#line hidden
+#line 34
     await testRunner.AndAsync("message with CorrelationId is cleared in SQS", ((string)(null)), ((global::Reqnroll.Table)(null)), "And ");
 #line hidden
             }

@@ -5,10 +5,19 @@ using RestSharp;
 
 namespace ApiAndUiProject.API.Clients
 {
-    public class UsersApiClient(string baseUrl, ITokenProvider tokenProvider)
+    public class UsersApiClient
     {
-        private readonly RestClient _client = new(baseUrl);
-        private readonly ITokenProvider _tokenProvider = tokenProvider;
+        private readonly RestClient _client;
+        private readonly ITokenProvider _tokenProvider;
+        private string? _queueUrl;
+
+        public UsersApiClient(ITokenProvider tokenProvider)
+        {
+            _tokenProvider = tokenProvider;
+            _client = new RestClient(ApiConfig.ApiBaseUrl);
+        }
+
+        public void SetQueueUrl(string queueUrl) => _queueUrl = queueUrl;
 
         private void AddAuthHeader(RestRequest request)
         {
@@ -17,10 +26,17 @@ namespace ApiAndUiProject.API.Clients
                 request.AddHeader("Authorization", $"Bearer {token}");
         }
 
+        private void AddQueueUrlHeader(RestRequest request)
+        {
+            if (!string.IsNullOrEmpty(_queueUrl))
+                request.AddHeader("X-Queue-Url", _queueUrl);
+        }
+
         public RestResponse CreateUser(User user, string correlationId)
         {
             var request = new RestRequest(ApiConfig.Users, Method.Post);
             AddAuthHeader(request);
+            AddQueueUrlHeader(request);
             request.AddHeader("X-Correlation-Id", correlationId);
             request.AddJsonBody(user);
             return _client.Execute(request);
@@ -30,6 +46,7 @@ namespace ApiAndUiProject.API.Clients
         {
             var request = new RestRequest(ApiConfig.UserByIdTemplate(id), Method.Get);
             AddAuthHeader(request);
+            AddQueueUrlHeader(request);
             return _client.Execute(request);
         }
 
@@ -37,13 +54,16 @@ namespace ApiAndUiProject.API.Clients
         {
             var request = new RestRequest(ApiConfig.Users, Method.Get);
             AddAuthHeader(request);
+            AddQueueUrlHeader(request);
             return _client.Execute(request);
         }
 
-        public RestResponse UpdateUser(int id, User user)
+        public RestResponse UpdateUser(int id, User user, string correlationId)
         {
             var request = new RestRequest(ApiConfig.UserByIdTemplate(id), Method.Put);
             AddAuthHeader(request);
+            AddQueueUrlHeader(request);
+            request.AddHeader("X-Correlation-Id", correlationId);
             request.AddJsonBody(user);
             return _client.Execute(request);
         }
@@ -52,6 +72,7 @@ namespace ApiAndUiProject.API.Clients
         {
             var request = new RestRequest(ApiConfig.UserByIdTemplate(id), Method.Patch);
             AddAuthHeader(request);
+            AddQueueUrlHeader(request);
             request.AddJsonBody(patchDto);
             return _client.Execute(request);
         }
@@ -60,8 +81,8 @@ namespace ApiAndUiProject.API.Clients
         {
             var request = new RestRequest(ApiConfig.UserByIdTemplate(id), Method.Delete);
             AddAuthHeader(request);
+            AddQueueUrlHeader(request);
             return _client.Execute(request);
         }
-
     }
 }

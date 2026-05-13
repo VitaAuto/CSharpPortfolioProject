@@ -1,17 +1,19 @@
-﻿using NUnit.Framework;
-using Moq;
+﻿using Amazon.SQS;
+using Amazon.SQS.Model;
 using ApiControllerProject.Controllers;
-using ApiControllerProject.Repositories;
 using ApiControllerProject.Models;
-using Microsoft.AspNetCore.Mvc;
+using ApiControllerProject.Repositories;
+using ApiControllerProject.Services;
 using FluentAssertions;
-using System.Collections.Generic;
-using Amazon.SQS;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
+using Moq;
+using NUnit.Framework;
+using System.Collections.Generic;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Amazon.SQS.Model;
-using System.Text.Json;
 
 namespace ApiAndUiProject.Tests.UnitTests
 {
@@ -20,25 +22,16 @@ namespace ApiAndUiProject.Tests.UnitTests
     public class UsersControllerTests
     {
         private Mock<IUserRepository>? _repoMock;
-        private Mock<IAmazonSQS>? _sqsMock;
-        private Mock<IConfiguration>? _configMock;
+        private Mock<IMessageSender>? _messageSenderMock;
+        private string _defaultQueueUrl = "test-queue-url";
         private UsersController? _controller;
 
         [SetUp]
         public void Setup()
         {
             _repoMock = new Mock<IUserRepository>();
-            _sqsMock = new Mock<IAmazonSQS>();
-            _configMock = new Mock<IConfiguration>();
-
-            var sqsSectionMock = new Mock<IConfigurationSection>();
-            sqsSectionMock.Setup(s => s["QueueUrl"]).Returns("test-queue-url");
-            _configMock.Setup(c => c.GetSection("Sqs")).Returns(sqsSectionMock.Object);
-
-            _sqsMock.Setup(s => s.SendMessageAsync(It.IsAny<SendMessageRequest>(), It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(new SendMessageResponse());
-
-            _controller = new UsersController(_repoMock.Object, _sqsMock.Object, _configMock.Object);
+            _messageSenderMock = new Mock<IMessageSender>();
+            _controller = new UsersController(_repoMock.Object, _messageSenderMock.Object, _defaultQueueUrl);
         }
 
         // --- CREATE ---
@@ -190,7 +183,7 @@ namespace ApiAndUiProject.Tests.UnitTests
         }
 
         [Test]
-        public async Task UpdateUser_Valid_ReturnsOk_AndSendsToSqs()
+        public async Task UpdateUser_Valid_ReturnsOk_AndSendsMessage()
         {
             var oldUser = new User { Id = 1, FirstName = "Ivan", LastName = "Ivanov", Email = "ivan@mail.com", IsActive = true };
             var newUser = new User { FirstName = "Petr", LastName = "Petrov", Email = "petr@mail.com", IsActive = false };
@@ -200,20 +193,36 @@ namespace ApiAndUiProject.Tests.UnitTests
             _repoMock!.Setup(r => r.GetUser(1)).Returns(oldUser);
             _repoMock!.Setup(r => r.UpdateUser(1, newUser)).Returns(updatedUser);
 
-            SendMessageRequest? capturedRequest = null;
-            _sqsMock!.Setup(s => s.SendMessageAsync(It.IsAny<SendMessageRequest>(), It.IsAny<CancellationToken>()))
-                .Callback<SendMessageRequest, CancellationToken>((req, _) => capturedRequest = req)
-                .ReturnsAsync(new SendMessageResponse());
+            string? capturedQueueUrl = null;
+            string? capturedMessageBody = null;
+            IDictionary<string, string>? capturedAttributes = null;
 
-            var result = await _controller!.UpdateUser(1, newUser);
+            _messageSenderMock!.Setup(s => s.SendMessageAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<IDictionary<string, string>>()))
+                .Callback<string, string, IDictionary<string, string>>((queueUrl, messageBody, attributes) =>
+                {
+                    capturedQueueUrl = queueUrl;
+                    capturedMessageBody = messageBody;
+                    capturedAttributes = attributes;
+                })
+                .Returns(Task.CompletedTask);
+
+            _controller!.ControllerContext = new ControllerContext
+            {
+                HttpContext = new DefaultHttpContext()
+            };
+
+            var result = await _controller.UpdateUser(1, newUser);
 
             result.Should().BeOfType<OkObjectResult>();
             if (result is OkObjectResult ok)
                 ok.Value.Should().BeEquivalentTo(updatedUser);
 
-            capturedRequest.Should().NotBeNull();
-            var sentUser = JsonSerializer.Deserialize<User>(capturedRequest!.MessageBody);
+            capturedQueueUrl.Should().Be(_defaultQueueUrl);
+            capturedMessageBody.Should().NotBeNull();
+            var sentUser = JsonSerializer.Deserialize<User>(capturedMessageBody!);
             sentUser.Should().BeEquivalentTo(updatedUser);
+            capturedAttributes.Should().NotBeNull();
+            capturedAttributes.Should().ContainKey("CorrelationId");
         }
 
         // --- PATCH ---
@@ -298,35 +307,51 @@ namespace ApiAndUiProject.Tests.UnitTests
         }
 
         [Test]
-        public async Task PatchUser_Valid_ReturnsOk_AndSendsToSqs()
+        public async Task PatchUser_Valid_ReturnsOk_AndSendsMessage()
         {
             var user = new User { Id = 1, FirstName = "Ivan", LastName = "Ivanov", Email = "ivan@mail.com", IsActive = true };
             var patch = new UserPatchDto { FirstName = "Petr" };
             var updatedUser = new User { Id = 1, FirstName = "Petr", LastName = "Ivanov", Email = "ivan@mail.com", IsActive = true };
 
             _repoMock!.Setup(r => r.GetUser(1)).Returns(user);
-            _repoMock!.Setup(r => r.EmailExists("ivan@mail.com", 1)).Returns(false);
-            _repoMock!.Setup(r => r.PatchUser(1, patch)).Returns(updatedUser);
+            _repoMock!.Setup(r => r.EmailExists(It.IsAny<string>(), 1)).Returns(false);
+            _repoMock!.Setup(r => r.PatchUser(1, It.IsAny<UserPatchDto>())).Returns(updatedUser);
 
-            SendMessageRequest? capturedRequest = null;
-            _sqsMock!.Setup(s => s.SendMessageAsync(It.IsAny<SendMessageRequest>(), It.IsAny<CancellationToken>()))
-                .Callback<SendMessageRequest, CancellationToken>((req, _) => capturedRequest = req)
-                .ReturnsAsync(new SendMessageResponse());
+            string? capturedQueueUrl = null;
+            string? capturedMessageBody = null;
+            IDictionary<string, string>? capturedAttributes = null;
 
-            var result = await _controller!.PatchUser(1, patch);
+            _messageSenderMock!.Setup(s => s.SendMessageAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<IDictionary<string, string>>()))
+                .Callback<string, string, IDictionary<string, string>>((queueUrl, messageBody, attributes) =>
+                {
+                    capturedQueueUrl = queueUrl;
+                    capturedMessageBody = messageBody;
+                    capturedAttributes = attributes;
+                })
+                .Returns(Task.CompletedTask);
+
+            _controller!.ControllerContext = new ControllerContext
+            {
+                HttpContext = new DefaultHttpContext()
+            };
+
+            var result = await _controller.PatchUser(1, patch);
 
             result.Should().BeOfType<OkObjectResult>();
             if (result is OkObjectResult ok)
                 ok.Value.Should().BeEquivalentTo(updatedUser);
 
-            capturedRequest.Should().NotBeNull();
-            var sentUser = JsonSerializer.Deserialize<User>(capturedRequest!.MessageBody);
+            capturedQueueUrl.Should().Be(_defaultQueueUrl);
+            capturedMessageBody.Should().NotBeNull();
+            var sentUser = JsonSerializer.Deserialize<User>(capturedMessageBody!);
             sentUser.Should().BeEquivalentTo(updatedUser);
+            capturedAttributes.Should().NotBeNull();
+            capturedAttributes.Should().ContainKey("CorrelationId");
         }
 
         // --- DELETE ---
         [Test]
-        public async Task DeleteUser_UserNotFound_ReturnsNotFound_AndDoesNotSendToSqs()
+        public async Task DeleteUser_UserNotFound_ReturnsNotFound_AndDoesNotSendMessage()
         {
             var userId = 1;
             _repoMock!.Setup(r => r.GetUser(userId)).Returns((User?)null);
@@ -335,7 +360,7 @@ namespace ApiAndUiProject.Tests.UnitTests
             var result = await _controller!.DeleteUser(userId);
 
             result.Should().BeOfType<NotFoundResult>();
-            _sqsMock!.Verify(s => s.SendMessageAsync(It.IsAny<SendMessageRequest>(), It.IsAny<CancellationToken>()), Times.Never);
+            _messageSenderMock!.Verify(s => s.SendMessageAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<IDictionary<string, string>>()), Times.Never);
         }
     }
 }

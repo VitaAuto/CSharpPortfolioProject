@@ -1,10 +1,10 @@
 ﻿using ApiControllerProject.Models;
 using ApiControllerProject.Repositories;
+using ApiControllerProject.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
-using Amazon.SQS;
-using Microsoft.Extensions.Logging;
+using System.Collections.Generic;
 
 namespace ApiControllerProject.Controllers
 {
@@ -15,26 +15,32 @@ namespace ApiControllerProject.Controllers
     [ApiController]
     [Route("api/[controller]")]
     public class UsersController : ControllerBase
-
     {
         private const string EmailExistsError = "User with this email already exists.";
         private const string EmailInvalidError = "Email is not valid.";
         private readonly IUserRepository _userRepository;
-        private readonly IAmazonSQS _sqsClient;
-        private readonly string _queueUrl;
+        private readonly IMessageSender _messageSender;
+        private readonly string _defaultQueueUrl;
 
         public UsersController(
-        IUserRepository userRepository,
-        IAmazonSQS sqsClient,
-        IConfiguration config)
+            IUserRepository userRepository,
+            IMessageSender messageSender,
+            string defaultQueueUrl)
         {
             _userRepository = userRepository;
-            _sqsClient = sqsClient;
-            _queueUrl = config.GetSection("Sqs")["QueueUrl"];
+            _messageSender = messageSender;
+            _defaultQueueUrl = defaultQueueUrl;
         }
+
         private bool IsValidEmail(string email)
         {
             return !string.IsNullOrWhiteSpace(email) && email.Contains('@') && email.Contains('.');
+        }
+
+        private string GetQueueUrl()
+        {
+            var queueUrlFromHeader = Request.Headers["X-Queue-Url"].FirstOrDefault();
+            return !string.IsNullOrWhiteSpace(queueUrlFromHeader) ? queueUrlFromHeader : _defaultQueueUrl;
         }
 
         [HttpPost]
@@ -63,27 +69,13 @@ namespace ApiControllerProject.Controllers
 
             var correlationId = Request.Headers["X-Correlation-Id"].FirstOrDefault();
             if (string.IsNullOrWhiteSpace(correlationId))
-            {
                 correlationId = Guid.NewGuid().ToString();
-            }
 
             var messageBody = System.Text.Json.JsonSerializer.Serialize(createdUser);
-            var sendMessageRequest = new Amazon.SQS.Model.SendMessageRequest
-            {
-                QueueUrl = _queueUrl,
-                MessageBody = messageBody,
-                MessageAttributes = new Dictionary<string, Amazon.SQS.Model.MessageAttributeValue>
-            {
-                { "CorrelationId", new Amazon.SQS.Model.MessageAttributeValue
-                    {
-                        DataType = "String",
-                        StringValue = correlationId ?? string.Empty
-                    }
-                }
-            }
-            };
+            var attributes = new Dictionary<string, string> { { "CorrelationId", correlationId } };
 
-            await _sqsClient.SendMessageAsync(sendMessageRequest);
+            await _messageSender.SendMessageAsync(GetQueueUrl(), messageBody, attributes);
+
             return CreatedAtAction(nameof(GetUser), new { id = createdUser.Id }, createdUser);
         }
 
@@ -136,13 +128,18 @@ namespace ApiControllerProject.Controllers
             user.ModifiedOn = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss");
 
             var updatedUser = _userRepository.UpdateUser(id, user);
+            if (updatedUser == null)
+                return StatusCode(500, "User update failed.");
+
+            var correlationId = Request.Headers["X-Correlation-Id"].FirstOrDefault();
+            if (string.IsNullOrWhiteSpace(correlationId))
+                correlationId = Guid.NewGuid().ToString();
+
             var messageBody = System.Text.Json.JsonSerializer.Serialize(updatedUser);
-            var sendMessageRequest = new Amazon.SQS.Model.SendMessageRequest
-            {
-                QueueUrl = _queueUrl,
-                MessageBody = messageBody
-            };
-            await _sqsClient.SendMessageAsync(sendMessageRequest);
+            var attributes = new Dictionary<string, string> { { "CorrelationId", correlationId } };
+
+            await _messageSender.SendMessageAsync(GetQueueUrl(), messageBody, attributes);
+
             return Ok(updatedUser);
         }
 
@@ -183,8 +180,7 @@ namespace ApiControllerProject.Controllers
 
             if (_userRepository.EmailExists(emailToCheck, id))
                 return Conflict(EmailExistsError);
-            if (_userRepository.EmailExists(emailToCheck, id))
-                return Conflict(EmailExistsError);
+
             if (patch.FirstName != null) user.FirstName = patch.FirstName;
             if (patch.LastName != null) user.LastName = patch.LastName;
             if (patch.Email != null) user.Email = patch.Email;
@@ -192,13 +188,18 @@ namespace ApiControllerProject.Controllers
             user.ModifiedOn = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss");
 
             var updatedUser = _userRepository.PatchUser(id, patch);
+            if (updatedUser == null)
+                return StatusCode(500, "User patch failed.");
+
+            var correlationId = Request.Headers["X-Correlation-Id"].FirstOrDefault();
+            if (string.IsNullOrWhiteSpace(correlationId))
+                correlationId = Guid.NewGuid().ToString();
+
             var messageBody = System.Text.Json.JsonSerializer.Serialize(updatedUser);
-            var sendMessageRequest = new Amazon.SQS.Model.SendMessageRequest
-            {
-                QueueUrl = _queueUrl,
-                MessageBody = messageBody
-            };
-            await _sqsClient.SendMessageAsync(sendMessageRequest);
+            var attributes = new Dictionary<string, string> { { "CorrelationId", correlationId } };
+
+            await _messageSender.SendMessageAsync(GetQueueUrl(), messageBody, attributes);
+
             return Ok(updatedUser);
         }
 
@@ -227,21 +228,9 @@ namespace ApiControllerProject.Controllers
                 if (string.IsNullOrWhiteSpace(correlationId))
                     correlationId = Guid.NewGuid().ToString();
 
-                var sendMessageRequest = new Amazon.SQS.Model.SendMessageRequest
-                {
-                    QueueUrl = _queueUrl,
-                    MessageBody = messageBody,
-                    MessageAttributes = new Dictionary<string, Amazon.SQS.Model.MessageAttributeValue>
-            {
-                { "CorrelationId", new Amazon.SQS.Model.MessageAttributeValue
-                    {
-                        DataType = "String",
-                        StringValue = correlationId
-                    }
-                }
-            }
-                };
-                await _sqsClient.SendMessageAsync(sendMessageRequest);
+                var attributes = new Dictionary<string, string> { { "CorrelationId", correlationId } };
+
+                await _messageSender.SendMessageAsync(GetQueueUrl(), messageBody, attributes);
             }
 
             return NoContent();
